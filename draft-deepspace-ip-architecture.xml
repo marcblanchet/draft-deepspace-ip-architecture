@@ -134,8 +134,8 @@
         <t>
 	  This store-and-forward mechanism requires proper
 	  provisioning of storage at each forwarding interface for the
-	  target deployment and usage. Mechanisms such as <xref
-	  target="ecn"/> can be used to signal storage congestion can
+	  target deployment and usage. Mechanisms such as ECN (<xref
+	  target="ecn"/>) can be used to signal storage congestion can
 	  be used to request that end nodes throttle their
 	  transmissions.  If the appropriate queue is full, then the
 	  interface MAY drop packets and MAY send ICMP error messages
@@ -194,7 +194,8 @@
 	Optimal routing for domains with intermittent links is an open
 	research topic and may leverage Contract Graph Routing <xref
 	target="CGR"/> with possible enhancements for the optimal
-	usage of relay node queue space.
+	usage of relay node queue space. This topic is out of scope
+	for this document.
       </t>
       <t>
 	On the surface of celestial bodies and in proximal orbit,
