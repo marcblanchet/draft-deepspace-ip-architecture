@@ -30,7 +30,7 @@
       </address>
     </author>
     <author fullname="Tony Li" initials="TL">
-      <organization>Juniper</organization>
+      <organization>Juniper Networks</organization>
       <address>
           <postal>
             <country>USA</country>
@@ -104,23 +104,115 @@
       <name>Internet Protocol</name>
       <t>IPv4 or IPv6 packets can be carried as is over long delays and disruptions, as IP itself has no notion of time. Originally, the Time To Live(TTL) field of IPv4 was defined based on time<xref target="STD5"/>, but it has been effectively implemented as an hop count, which was renamed as "Hop Count" in IPv6<xref target="STD86"/>. Nothing needs to be changed to the IP protocol or its packet format.</t>
       <section>
-        <name>IP forwarding and Store and Forward</name>
-        <t>TODO-TL: review, enhance</t>
-        <t>In the context of deep space, an IP packet would need to be stored temporarily over longer periods than typical Internet, when the next hop is currently unreachable or undefined, for example due to orbital dynamics.</t>
-        <t>This store and forward mechanism may be implemented at layer 2 as it is currently done by the Mars orbiters. In this case, the frames are stored, independent of the frame payloads, which may be IP or else. In this case, IP is unaware of store and forward and no change are needed in the IP forwarding engine, as the string of L2 links with store and forward is just a L2 network, and the IP link is behaving as a point to point link with a large and variable latency.</t>
-        <t>If the IP forwarders have interfaces facing the intermittance, then the IP forwarding engine has to temporarily store packets. In this case, a queueing discipline should be used to store packets, that might be implemented as a deep queue with active queue management(AQM)<xref target="RFC7567"/>. When the link to the next hop is up again, maybe minutes or hours later, forwarding tables are updated and stored packets are forwarded on the link to appropriate destinations.</t>
-        <t>This store-and-forward mechanism, implemented at L2 or L3, requires proper sizing and provisioning of memory and storage for temporarily storing IP packets at each forwarding node for the target deployment and usage. Mechanisms to signal almost full storage can be used to require end nodes to down pace. One mechanism is explained in <xref target="ecn"/>. If the storage is full, then the forwarder will drop packets and send ICMP error messages to the source, so that the transport can recover by resending the dropped packets. The dropped packets may not be the last in, depending on queuing policies configured in the forwarding node, which may implement priorities based on diffserv/traffic class, source or destination IP addresses, flow label or other parameters. Therefore, store and forward policies shall be defined and implemented to cover those cases and also which priorities should be given to packets when link becomes up. An example is described in <xref target="I-D.blanchet-tvr-forwarding"/>.</t>
+        <name>IP Forwarding and Store-and-Forward</name>
+        <t>
+	  For deep space applications, an IP packet may need to be
+	  stored temporarily over much longer periods than are typical
+	  for the Internet when the next hop is currently unreachable
+	  or undefined, which can happen due to orbital dynamics. This
+	  is commonly referred to as "store-and-forward" and bears no
+	  relationship to the same term when used in reference to
+	  switch architectures.
+	</t>
+        <t>
+	  This store and forward mechanism may be implemented at layer
+	  2 as is currently done by the Mars orbiters. In this case,
+	  the frames are stored, independent of payload type.  In this
+	  case, IP packets are unaware of the store-and-forward and no
+	  changes are needed in the IP forwarding function.  The L2
+	  network is just behaving as a point-to-point link with a
+	  large and variable latency.
+	</t>
+        <t>
+	  If an IP router has an interfaces on an intermittent link,
+	  then a queueing discipline should be used to
+	  store packets. This might be implemented as a deep queue with
+	  active queue management(AQM)<xref target="RFC7567"/>. When the
+	  link to the next hop is up again, maybe minutes or hours
+	  later, the stored packets can then be transmitted.
+	</t>
+        <t>
+	  This store-and-forward mechanism requires proper
+	  provisioning of storage at each forwarding interface for the
+	  target deployment and usage. Mechanisms such as ECN (<xref
+	  target="ecn"/>) can be used to signal storage congestion can
+	  be used to request that end nodes throttle their
+	  transmissions.  If the appropriate queue is full, then the
+	  interface MAY drop packets and MAY send ICMP error messages
+	  to the source, so that the transport protocol can recover by
+	  resending the dropped packets. The choice of which packets
+	  to drop during a queue congestion event depends on the
+	  queuing policies configured in the node, which may be a
+	  function of diffserv/traffic class, source or destination IP
+	  addresses, flow label, or other parameters. An example is
+	  described in <xref target="I-D.blanchet-tvr-forwarding"/>.
+	</t>
       </section>
       <section anchor="headercompression">
         <name>Header Compression</name>
-        <t>Deep space links are point to point links and bandwidth in space is very valuable, therefore header compression is very useful. Static Context Header Compression(SCHC)<xref target="I-D.ietf-schc-architecture"/> is a header compression technique that relies on rules in a static context, therefore more efficient for deep space. SCHC shall be considered between the two IP peers of a deep space point to point link or string of L2 links.</t>
+        <t>
+	  Deep space links are point-to-point links and bandwidth in
+	  space is very valuable, so header compression is very
+	  useful. Static Context Header Compression (SCHC) <xref
+	  target="I-D.ietf-schc-architecture"/> is a header
+	  compression technique that relies on rules in a static
+	  context, and is therefore more efficient for deep
+	  space. SCHC should be considered on a deep space
+	  point-to-point link or a string of L2 links.
+	</t>
       </section>
     </section>
     <section>
       <name>IP Routing</name>
-      <t>TODO-TL: review, enhance</t>
-      <t>Given the relative static nature of space networks at least for the forseeable future, e.g., new nodes or routers are not often added or deleted in the network, use of static routes is recommended. Additionally, they may be configured based on contact plan schedules (<xref target="I-D.blanchet-tvr-contactplan"/>,<xref target="I-D.ietf-tvr-schedule-yang"/>.</t>
-      <t>On celestial body surface, there will be multiple network service providers and customers which peering is relevant. Therefore, BGP<xref target="RFC4271"/> shall be used for these peerings.</t>
+      <t>
+	Existing routing protocols have a requirement for proof of
+	liveness between protocol partners that is implemented through
+	the periodic exchange of packets between partners. This is
+	impractical on long-delay or intermittent links, so a PCE
+	<xref target="RFC4655"/> based approach seems appropriate for
+	those domains possibly supplemented by contact plan schedules
+	<xref target="I-D.blanchet-tvr-contactplan"/> <xref
+	target="I-D.ietf-tvr-schedule-yang"/>. Interconnection between
+	domains can still be done with BGP <xref target="RFC4271"/>,
+	but long-delay or intermittent links should be
+	avoided. Domains straddling such links will need to provide
+	proxy advertisements for prefixes reachable across such links.
+      </t>
+      <t>
+	Optimal routing for domains with intermittent links is out of
+	scope for this document.
+      </t>
+      <t>
+	On the surface of celestial bodies and in proximal orbit,
+	traditional protocols are applicable and should be used (e.g.,
+	<xref target="I-D.li-arch-sat"/>).
+      </t>
+      <section title="Addressing">
+	<t>
+	  The IP address space is a hierarchical namespace where
+	  ranges of addresses are encoded as "prefixes".  Individual
+	  domains advertise a set of prefixes to the broader Internet
+	  and assign these addresses internally. Prefixes may be
+	  aggregated into less-specific prefixes, which makes the
+	  routing subsystem more efficient by decreasing overhead.
+	</t>
+	<t>
+	  Space networks provide a unique opportunity to provide
+	  extremely efficient routing by assigning a unique prefix or
+	  block of addresses per celestial body and its proximal
+	  orbits. Management of the IP address space is currently
+	  documented in <xref target="RFC7020"/>, but this only covers
+	  continental regions and does not provide for addressing for
+	  space.
+	</t>
+	<t>
+	  Address space for outer space should be managed by a single
+	  Regional Internet Registry (RIR) and blocks of address space
+	  should be allocated for each celestial body of
+	  interest. Space service providers should use prefixes
+	  assigned by this RIR.
+	</t>
+      </section>
     </section>
     <section>
       <name>Transport</name>
@@ -189,8 +281,10 @@
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.3168.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4271.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4340.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4655.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4838.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6241.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7020.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7122.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7567.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8040.xml"/>
@@ -205,15 +299,16 @@
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9293.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml9/reference.STD.0005.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml9/reference.STD.0086.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tvr-schedule-yang.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.blanchet-tvr-contactplan.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.blanchet-tvr-forwarding.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-ip-assessment.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-schc-architecture.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-netconf-over-quic.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-masque-quic-proxy.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-netconf-over-quic.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-schc-architecture.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tvr-schedule-yang.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.li-arch-sat.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-ip-assessment.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-quic-profile.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
         <reference anchor="IPoverCCSDSSpaceLinks" target="https://public.ccsds.org/Pubs/702x1b1c2.pdf"><front><title>IP OVER CCSDS SPACE LINKS, Blue Book 702</title><author><organization>Consultative Committee on Space Data Systems(CCSDS)</organization></author><date year="2012" month="September"/></front></reference>
         <reference anchor="SANAIPEHeaderRegistry" target="https://sanaregistry.org/r/ipe_header/"><front><title>Internet Protocol Extension Header</title><author/></front></reference>
         <reference anchor="CCSDS_AOS" target="https://public.ccsds.org/Pubs/732x0b4.pdf"><front><title>AOS Space Data Link Protocol, Blue Book 732.0-B-4</title><author><organization>Consultative Committee on Space Data Systems(CCSDS)</organization></author><date year="2021" month="October"/></front></reference>
@@ -238,6 +333,7 @@
         <reference anchor="idsis" target="https://internationaldeepspacestandards.com/wp-content/uploads/2024/02/communication_reva_final_9-2020.pdf"><front><title>International Communication System
             Interoperability Standards (ICSIS)</title><author/><date month="September" year="2020"/></front></reference>
         <reference anchor="lnis" target="https://www.nasa.gov/directorates/somd/space-communications-navigation-program/lunanet-interoperability-specification/"><front><title>LunaNet Interoperability Specification</title><author/><date month="September" year="2022"/></front></reference>
+
       </references>
     </references>
     <section anchor="Acknowledgements" numbered="false">
