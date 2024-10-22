@@ -165,37 +165,22 @@
     <section>
       <name>IP Routing</name>
       <t>
-	The Internet routing architecture is constructed from a set of
-	"routing domains" or "autonomous systems" <xref
-	target="RFC827"/>. Each domain is independently administered
-	and the overall set of domains is interconnected with the
-	Exterior Gateway Protocol (EGP) known as Border Gateway
-	Protocol (BGP) <xref target="RFC4271"/>. Routing within a
-	domain is done by an Interior Gateway Protocol (IGP) such as
-	IS-IS <xref target="ISO10589"/> or OSPF <xref
-	target="RFC2328"/><xref target="RFC5340"/>. Intra-domain
-	routing can also be done by a Path Computation Element (PCE)
-	<xref target="RFC4655"/> possibly supplemented by contact plan
-	schedules <xref target="I-D.blanchet-tvr-contactplan"/> <xref
-	target="I-D.ietf-tvr-schedule-yang"/>.
-      </t>
-      <t>
 	Existing routing protocols have a requirement for proof of
 	liveness between protocol partners that is implemented through
 	the periodic exchange of packets between partners. This is
 	impractical on long-delay or intermittent links, so a PCE
-	based approach seems appropriate for those
-	domains. Interconnection between domains can still be done
-	with BGP, but long-delay or intermittent links should be
+	<xref target="RFC4655"/> based approach seems appropriate for
+	those domains possibly supplemented by contact plan schedules
+	<xref target="I-D.blanchet-tvr-contactplan"/> <xref
+	target="I-D.ietf-tvr-schedule-yang"/>. Interconnection between
+	domains can still be done with BGP <xref target="RFC4271"/>,
+	but long-delay or intermittent links should be
 	avoided. Domains straddling such links will need to provide
 	proxy advertisements for prefixes reachable across such links.
       </t>
       <t>
-	Optimal routing for domains with intermittent links is an open
-	research topic and may leverage Contract Graph Routing <xref
-	target="CGR"/> with possible enhancements for the optimal
-	usage of relay node queue space. This topic is out of scope
-	for this document.
+	Optimal routing for domains with intermittent links is out of
+	scope for this document.
       </t>
       <t>
 	On the surface of celestial bodies and in proximal orbit,
@@ -292,15 +277,12 @@
       <references>
           <name>Informative References</name>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.768.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.827.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.1157.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.2328.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.3168.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4271.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4340.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4655.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4838.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.5340.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6241.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7020.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7122.xml"/>
@@ -328,17 +310,6 @@
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-quic-profile.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
         <reference anchor="IPoverCCSDSSpaceLinks" target="https://public.ccsds.org/Pubs/702x1b1c2.pdf"><front><title>IP OVER CCSDS SPACE LINKS, Blue Book 702</title><author><organization>Consultative Committee on Space Data Systems(CCSDS)</organization></author><date year="2012" month="September"/></front></reference>
-	<reference anchor="ISO10589" target="ISO/IEC 10589:2002">
-          <front>
-            <title>
-              Intermediate system to Intermediate system routing information exchange protocol for use in conjunction with the Protocol for providing the Connectionless-mode Network Service (ISO 8473)
-            </title>
-            <author fullname="ISO" initials="" surname="ISO">
-              <organization>IANA</organization>
-            </author>
-            <date month="August" year="1987"/>
-          </front>
-	</reference>
         <reference anchor="SANAIPEHeaderRegistry" target="https://sanaregistry.org/r/ipe_header/"><front><title>Internet Protocol Extension Header</title><author/></front></reference>
         <reference anchor="CCSDS_AOS" target="https://public.ccsds.org/Pubs/732x0b4.pdf"><front><title>AOS Space Data Link Protocol, Blue Book 732.0-B-4</title><author><organization>Consultative Committee on Space Data Systems(CCSDS)</organization></author><date year="2021" month="October"/></front></reference>
         <reference anchor="CCSDS_TM" target="https://public.ccsds.org/Pubs/132x0b3.pdf"><front><title>TM Space Data Link Protocol, Blue Book 132.0-B-3</title><author><organization>Consultative Committee on Space Data Systems(CCSDS)</organization></author><date year="2021" month="October"/></front></reference>
@@ -362,14 +333,6 @@
         <reference anchor="idsis" target="https://internationaldeepspacestandards.com/wp-content/uploads/2024/02/communication_reva_final_9-2020.pdf"><front><title>International Communication System
             Interoperability Standards (ICSIS)</title><author/><date month="September" year="2020"/></front></reference>
         <reference anchor="lnis" target="https://www.nasa.gov/directorates/somd/space-communications-navigation-program/lunanet-interoperability-specification/"><front><title>LunaNet Interoperability Specification</title><author/><date month="September" year="2022"/></front></reference>
-	<reference anchor="CGR"
-		   target="https://ntrs.nasa.gov/api/citations/20120006508/downloads/20120006508.pdf">
-	  <front>
-	    <title>Contact Graph Routing</title>
-	    <author fullname="Scott C. Burleigh" initials="S.C.B."/>
-	    <date year="2011" month="October"/>
-	  </front>
-	</reference>
 
       </references>
     </references>
