@@ -9,7 +9,7 @@
 ]>
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" docName="draft-many-deepspace-ip-architecture-00" ipr="trust200902" obsoletes="" updates="" submissionType="IETF" xml:lang="en" version="3">
   <front>
-    <title abbrev="IP in Deep Space">The IP Protocol Stack in Deep Space: Architecture</title>
+    <title abbrev="IP in Deep Space">An Architecture for IP in Deep Space</title>
     <seriesInfo name="Internet-Draft" value="draft-many-deepspace-ip-architecture-00"/>
     <author fullname="Marc Blanchet" initials="MB">
       <organization>Viagenie</organization>
