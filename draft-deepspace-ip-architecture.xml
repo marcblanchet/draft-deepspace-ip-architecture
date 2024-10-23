@@ -7,10 +7,10 @@
 <!ENTITY nbhy "&#8209;">
 <!ENTITY wj "&#8288;">
 ]>
-<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" docName="draft-many-deepspace-ip-architecture-00" ipr="trust200902" obsoletes="" updates="" submissionType="IETF" xml:lang="en" version="3">
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" docName="draft-many-deepspace-ip-architecture-01" ipr="trust200902" obsoletes="" updates="" submissionType="IETF" xml:lang="en" version="3">
   <front>
-    <title abbrev="IP in Deep Space">The IP Protocol Stack in Deep Space: Architecture</title>
-    <seriesInfo name="Internet-Draft" value="draft-many-deepspace-ip-architecture-00"/>
+    <title abbrev="IP in Deep Space">An Architecture for IP in Deep Space</title>
+    <seriesInfo name="Internet-Draft" value="draft-many-deepspace-ip-architecture-01"/>
     <author fullname="Marc Blanchet" initials="MB">
       <organization>Viagenie</organization>
       <address>
@@ -48,31 +48,129 @@
     <keyword>dns</keyword>
     <keyword>routing</keyword>
     <abstract>
-      <t>Deep space communications involve long delays (e.g., Earth to Mars is 4-20 minutes) and intermittent communications, because of orbital dynamics. The IP protocol stack used on Internet is based on assumptions of shorter delays and mostly uninterrupted communications. This document describes the architecture of the IP protocol stack tailored for its use in deep space. It involves buffering IP packets in IP forwarders facing intermittent links, signaling buffer storage near capacity, adjusting transport protocols configuration and application protocols timers. This architecture applies to Moon, Mars or in general interplanetary networking.</t>
+      <t>
+	Deep space communications involve long delays (e.g., Earth to
+	Mars is 4-20 minutes) and intermittent communications, because
+	of orbital dynamics. The IP protocol stack used on the Internet is
+	based on assumptions of shorter delays and mostly uninterrupted
+	communications. This document describes the architecture of the
+	IP protocol stack tailored for its use in deep space. It
+	involves buffering IP packets in IP forwarders facing
+	intermittent links, signaling buffer storage near capacity,
+	and adjusting transport protocol configuration and application
+	protocol timers. This architecture applies to the Moon, Mars, or
+	general interplanetary networking.
+      </t>
     </abstract>
   </front>
   <middle>
     <section anchor="intro">
       <name>Introduction</name>
-      <t>Deep space communications involve long delays (e.g., Earth to Mars is 4-20 minutes) and intermittent communications, because of orbital dynamics. Up to now, communications have been done on a layer-2 point to point basis, with sometimes the use of relays, but no layer-3 networking has been in use. <xref target="RFC4838"/> reports an assessment done around 25 years ago concluding that the IP protocol stack was not suitable for deep space networking. This result lead to the definition of a completly new protocol stack based on a store-and-forward paradigm implemented in the Bundle Protocol(BP) <xref target="RFC9171"/> and its various components, such as convergence-layer adapters(<xref target="RFC9174"/>, <xref target="RFC7122"/>) and BP Security(BPSEC)<xref target="RFC9172"/>.</t>
-      <t>More recently, space agencies are planning to deploy IP networks on celestial bodies, such as Moon<xref target="ioag"/> or Mars<xref target="ioag-mars"/>, surface, and orbital vicinity, using layer2 technologies such as WIFI or 5G. On the surface, it is planned to have high density of network nodes of space stations and habitats.</t>
-      <t>Mission concepts are also based on a cluster of multiple network nodes in close proximity at Langrange points.</t>
-      <t>A previous document<xref target="I-D.many-deepspace-ip-assessment"/> revisited the initial assessment of not using IP and concluded that the IP stack is in fact viable in deep space, given the IP stack evolution that happened since the initial assessment. This document defines an architecture to use IP in deep space networking. IP in deep space means running IP over deep space layer-2 links, a reliable transport over IP, applications protocols over that transport and applying proper routing, security and network management on that IP network. Reusing the whole IP stack in deep space enables the reuse of all protocols, tools and software currently used on Internet. However, as one might already argue, many components of the IP stack can not be used as is and therefore requires careful configuration and deployment considerations that are discussed in this document.</t>
-      <t>The keyword Delay-Tolerant Networking (DTN), also expanded to Delay and Disruption-Tolerant Networking, has been used to identify the problem space and given that up to now, the solution was based on the Bundle protocol, DTN was also associated with Bundle protocol. This document tries to solve the DTN problem using the Internet Protocol stack. Therefore, in this document, the DTN keyword is used to name the problem space, not the Bundle protocol solution.</t>
-      <t>Since Moon is a few light seconds away from Earth, it is possible to somewhat configure and run various IP based protocols and applications to make it "work". Mars with a much longer delay is more difficult. Therefore, this document uses Mars as the base example, knowing that if it works for Mars, a much harder problem, it could be replicated easily for Moon, or for other networks made with relays around a celestial body. This framework shall also work for longer delays, such as reaching Jupiter or the whole Solar System Internet(SSI), but it is not specifically discussed. This document uses "deep space" extensively in order to differentiate with "space" which often includes Earth orbiting communications, which is not discussed in this document, even if the definition of deep space per ITU does not include Moon, while this document is applicable to IP networks on the Moon.</t>
-      <t>It should also be noted that DTN and BP were also designed for non-space use cases. While this document focuses on the deep space use case, it shall work for the other use cases of BP, but these use cases are out of scope of this document.</t>
-      <t>Space missions are typically planned many years in advance and are long-lived, spanning over many years even decades. Spacecrafts are controlled from Earth and therefore should always be manageable from Earth. Given the remoteness and the difficulty to physically access the spacecraft, software upgrades and configuration changes are avoided whenever possible.</t>
-      <t>As with Bundle protocol, this framework proposes to use IP in deep space with a similar store-and-forward paradigm. Therefore, the IP layer has to deal with the fact that a destination may not be currently reachable and that IP packets should be stored for an unusual amount of time, such as minutes or hours or days, in the forwarding device waiting for a new link up  opportunity. The transport layer should be able to work with long and variable delays, including intermittent communications. The application protocols and application themselves should be properly set to wait a longer time than on Internet to receive a response to a query. Finally, all network services such as routing, security, naming and network management should also be adapted in this new context. This document is structured around these layers.</t>
+      <t>
+	Deep space communications involve long delays (e.g., Earth to
+	Mars is 4-20 minutes) and intermittent communications, because
+	of orbital dynamics. Up to now, communications have been done on
+	a layer-2 point-to-point basis, with sometimes the use of
+	relays, but no layer-3 networking has been in use. <xref
+	target="RFC4838"/> reports an assessment done around 25 years
+	ago concluding that the IP protocol stack was not suitable for
+	deep space networking. This result led to the definition of a
+	completely new protocol stack based on a store-and-forward
+	paradigm implemented in the Bundle Protocol(BP) <xref
+	target="RFC9171"/> and its various components, such as
+	convergence-layer adapters (<xref target="RFC9174"/>, <xref
+	target="RFC7122"/>) and BP Security (BPSEC) <xref
+	target="RFC9172"/>.
+      </t>
+      <t>More recently, space agencies plan to deploy IP
+      networks on celestial bodies, such as the Moon <xref
+      target="ioag"/> or Mars<xref target="ioag-mars"/>, on the
+      surface and in orbital vicinity, using layer 2 technologies such
+      as Wi-Fi or 5G. On the surface, the plan is to have a dense
+      network around facilities and habitats.</t>
+      <t>Mission concepts are also based on a cluster of multiple network nodes nearby at Lagrange points.</t>
+      <t>
+	A previous document <xref
+	target="I-D.many-deepspace-ip-assessment"/> revisited the
+	initial assessment of not using IP and concluded that the IP
+	stack is viable in deep space, given the IP stack evolution
+	that happened since the original evaluation. This document
+	defines an architecture to use IP in deep space networking. IP
+	in deep space means running IP over deep space layer-2 links,
+	a reliable transport over IP, applications protocols over that
+	transport, and applying proper routing, security, and network
+	management on that IP network. Reusing the whole IP stack in
+	deep space enables the reuse of all protocols, tools, and
+	software currently used on the Internet. However, as one might
+	already argue, many components of the IP stack cannot be used
+	as is and therefore requires careful configuration and
+	deployment considerations that are discussed in this document.
+      </t>
+      <t>
+	Delay-Tolerant Networking (DTN), also known as Delay and
+	Disruption-Tolerant Networking, has been used to identify the
+	problem space, and since the solution was based on the Bundle
+	protocol, DTN has also been associated with the Bundle
+	protocol. This document tries to solve the DTN problem using
+	the Internet Protocol stack. Therefore, in this document, the
+	DTN keyword is used to name the problem space, not the Bundle
+	protocol solution.
+      </t>
+      <t>
+	Since the Moon is a few light seconds away from Earth, it is
+	possible to configure and run various IP-based protocols and
+	applications to make it "work". Mars with a much longer delay
+	is more difficult. Therefore, this document uses Mars as the
+	base example, knowing that if it works for Mars, a much harder
+	problem, it could be replicated easily for the Moon or other
+	networks made with relays around a celestial body. This
+	framework would also work for longer delays, such as reaching
+	Jupiter or the whole Solar System Internet (SSI), but it is
+	not specifically discussed. This document uses "deep space"
+	extensively as opposed to "space" which often includes
+	earth-orbiting communications, which are not covered this
+	document. Even if the definition of deep space per the ITU
+	does not include the Moon, this document applies to IP
+	networks on the Moon.
+      </t>
+      <t>It should also be noted that DTN and BP were also designed
+      for non-space use cases. While this document focuses on the deep
+      space use case, it shall work for the other use cases of BP, but
+      these use cases are outside of the scope of this document.</t>
+      <t>Space missions are typically planned for many years and are
+      long-lived, spanning years or even decades. Spacecraft are
+      controlled from Earth and therefore should always be manageable
+      from Earth. Given the remoteness and the difficulty of physically accessing the spacecraft software upgrades and configuration changes are avoided whenever possible.</t>
+      <t>As with the Bundle protocol, this framework proposes to use
+      IP in deep space with a similar store-and-forward
+      paradigm. Therefore, the IP layer has to deal with the fact that
+      a destination may not be currently reachable and that IP packets
+      could be stored for an unusual amount of time, such as minutes,
+      hours, or days, in the forwarding device waiting for a new
+      link-up  opportunity. The transport layer should be able to work
+      with long and variable delays, including intermittent
+      communications. The application protocols and the applications
+      themselves should be properly set to wait a longer time than on
+      the current Internet to receive a response to a query. Finally, all network services such as routing, security, naming, and network management should also be adapted to this new context. This document is structured around these layers.</t>
       <section>
-        <name>Document and Discussion location</name>
+        <name>Document and Discussion Location</name>
         <t>The source of this document is located at https://github.com/marcblanchet/draft-deepspace-ip-architecture. Comments or changes are welcomed using a PR or an issue.</t>
         <t>This subject should be discussed on the deepspace@ietf.org mailing list.</t>
       </section>
     </section>
     <section anchor="usecases">
       <name>Use Cases</name>
-      <t>Multiple countries are developing systems aimed for a sustained lunar presence combining manned and robotic missions, within several years.  IP has been included in the stack for the International Deep Space Interoperability Standards<xref target="idsis"/>, and the LunaNet Interoperability Specification<xref target="lnis"/>.  There is a general intention to extend and reuse systems developed for lunar use to later Mars use</t>
-      <t>Separate space agencies and private companies are deploying lunar space stations, orbiters, landers, rovers, habitats, crewed mission elements, and other assets.  Due to pervasive use and support of IP in modern computing systems, it also is naturally used onboard many space systems, and between co-located systems. As more-and-more IP-enabled assets become deployed in lunar vicinity, it will increasingly create opportunities to interconnect them.  In fact, internetworking of lunar (and future Mars) systems is becoming essential, as plans call explicitly for cooperation between mission elements and communications/navigation system assets operated by different space agencies and/or private companies acting as service providers.  There are expected to be several different lunar network service providers (LNSPs) offering different varieties of relayed and/or direct services.  It may be expected that lunar IP networks should over time become united into larger aggregates, and even into a single interoperable network (as intended within the LunaNet conception).</t>
+      <t>Multiple countries are developing systems for a sustained
+      lunar presence combining manned and robotic missions, within
+      several years.  IP has been included in the stack for the
+      International Deep Space Interoperability Standards <xref
+      target="idsis"/>, and the LunaNet Interoperability Specification
+      <xref target="lnis"/>.  There is a general intention to extend
+      and reuse systems developed for lunar use for later use on Mars.
+      </t>
+      <t>Separate space agencies and private companies are deploying
+      lunar space stations, orbiters, landers, rovers, habitats,
+      crewed mission elements, and other assets.  Due to the pervasive use and support of IP in modern computing systems, it is naturally used onboard many space systems, and between co-located systems. As more-and-more IP-enabled assets become deployed in lunar vicinity, they will increasingly create opportunities to interconnect them.  In fact, internetworking of lunar (and future Mars) systems is becoming essential, as plans call explicitly for cooperation between mission elements and communications/navigation system assets operated by different space agencies and/or private companies acting as service providers.  There are expected to be several different lunar network service providers (LNSPs) offering different varieties of relayed and/or direct services.  It may be expected that lunar IP networks should over time become united into larger aggregates, and even into a single interoperable network (as intended within the LunaNet conception).</t>
       <t>Routing within and between dynamically connected network elements may be handled in various ways, as the practices develop and specific systems are deployed.  There will likely be coordination between LNSPs and some methods to share and control pre-determined time-varying static routes (similar to PCE architecture), traffic volume expectations, security policies, etc.  The early steps in lunar networking may not actually interconnect the global Internet directly with the lunar surface, though later on this may become reasonable.</t>
       <section anchor="examplenetwork">
         <name>Examplary Network</name>
