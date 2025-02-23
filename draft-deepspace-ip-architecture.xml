@@ -279,7 +279,7 @@
       <name>Internet Protocol</name>
       <t>IPv4 or IPv6 packets can be carried as is over long delays
       and disruptions, as IP has no notion of time. Originally,
-      the Time To Live(TTL) field of IPv4 was defined based on time
+      the Time To Live (TTL) field of IPv4 was defined based on time
       <xref target="STD5"/>, but it has been effectively implemented
       as a hop count, which was renamed as "Hop Count" in IPv6 <xref target="STD86"/>. Nothing needs to be changed to the IP protocol or its packet format.</t>
       <section>
@@ -407,10 +407,12 @@
 	the rate of sending packets at the source node to decrease the
 	perceived congestion in the network. QUIC supports many new
 	features suitable and useful in deep space such as 1 RTT for
-	connection establishment and security, mobility, 0 RTT, streams, user-space, etc.</t>
+	connection establishment and security, mobility, 0 RTT,
+	streams, user space, etc. [TLI: This sentence needs more words
+	to explain these references.]</t>
         <t>Current implementations of QUIC typically set various
 	transport configuration parameters suitable for the Internet
-	environment, expecting an RTT is in the hundreds of milliseconds
+	environment, expecting an RTT to be in the hundreds of milliseconds
 	and a normally always-connected network. Therefore, QUIC
 	stacks using default configurations will not work in deep
 	space. However, studies and simulations <xref
@@ -444,7 +446,7 @@
         the forwarders to signal that issue. Given delays and
         disruptions that mean the reception by the source may take a
         longer time, the forwarders should be proactive and signal
-        based on the types of links and actual rate of storage
+        based on the types of links and the actual rate of storage
         usage. IP clients with QUIC should process the received ECN
         signals appropriately.</t>
       </section>
@@ -458,7 +460,12 @@
       Expires <xref target="RFC9111"/>, should not be used or if used,
       must be set to large enough values to cover the longest delay so
       that expiration does not happen before the actual data arrives
-      at the destination. As with any HTTP application and content on the Internet, these headers should be set properly based on the deployment use case, which is ever more important for deep space. Similarly, when continuous content transfer is used, as with 100-Continue <xref target="RFC9110"/>, proper values for headers should be set.</t>
+      at the destination. As with any HTTP application and content on
+      the Internet, these headers should be set properly based on the
+      deployment use case, which is even more important for deep
+      space. Similarly, when continuous content transfer is used, as
+      with 100-Continue <xref target="RFC9110"/>, proper values for
+      headers should be set.</t>
       <t>HTTP clients and servers typically have default timeouts that
       should be modified. For example, curl <xref
       target="curl"/> has the "-m" option for this use
@@ -515,7 +522,7 @@
 	target="RFC8040"/> shall be used with proper configuration
 	values to avoid timeouts and appropriate transport. NETCONF
 	over QUIC transport <xref target="I-D.ietf-netconf-over-quic"/> or RESTCONF over HTTP over QUIC transport shall be configured with appropriate QUIC transport parameters as discussed in <xref target="quic-section"/>.</t>
-        <t>While being declared historic in IETF, SNMP<xref target="RFC1157"/> runs over UDP and have no notion of time. Therefore, with proper configuration of client timeout, it can be used as is to manage nodes and services in deep space.</t>
+        <t>While being declared historic in IETF, SNMP<xref target="RFC1157"/> runs over UDP and has no notion of time. Therefore, with proper configuration of client timeout, it can be used as is to manage nodes and services in deep space.</t>
       </section>
     </section>
     <section anchor="IANA">
@@ -524,9 +531,25 @@
     </section>
     <section anchor="Security">
       <name>Security Considerations</name>
-      <t>Using the current IP protocol stack in deep space inherit all the work on privacy, cryptography, key management, firewalls and relative high scrutiny of protocols that is deployed on Internet. As an example, TLS has been way more scrutinized than almost any other secure transport protocol. Moreover, given that no changes are made in the protocols, this architecture does not bring new security issues. Obviously, the deep space security requirements are different than on Earth Internet, but nothing has been found to prevent the conformance of the IP protocol stack to those requirements.</t>
-      <t>As it is currently planned, the deep space network shall be isolated from the current Internet by "air gap", to disable any direct communications from Internet to deep space. Moreover, destination IP prefixes filtering shall be used to restrict the traffic to only the relevant one for each link. Note that this shall also be implemented in the routing control plane, but additional security might be appropriate to further protect the deep space links.</t>
-      <t>Each celestial network edge device shall have firewall rules to disable non-useful trafic to go through deep space links. If communications from Mars may only occur to Earth, but not Moon, then appropriate filtering based on destination IP prefixes shall be used. Given the air gap on Earth for Internet, there shall be no default route advertised in space that could for example point to Earth Internet.</t>
+      <t>Using the current IP protocol stack in deep space inherits
+      all the work on privacy, cryptography, key management,
+      firewalls, and scrutiny of protocols that are deployed on the
+      Internet. As an example, TLS has been more carefully examined
+      than almost any other secure transport protocol. Moreover, given
+      that no changes are made in the protocols, this architecture
+      does not bring new security issues. Deep space security
+      requirements are different than on the existing Internet, but nothing has been found to prevent the conformance of the IP protocol stack to those requirements.</t>
+      <t>As it is currently planned, the deep space network shall be
+      isolated from the current Internet by an "air gap", to disable
+      any direct communications from the Internet to deep space. Moreover, destination IP prefix filtering shall be used to restrict the traffic to only the relevant one for each link. Note that this shall also be implemented in the routing control plane, but additional security might be appropriate to further protect the deep space links.</t>
+      <t>Each celestial network edge device shall have firewall rules
+      to prevent inappropriate traffic from entering deep space
+      links. If communications from Mars may only occur to Earth, but
+      not to the Moon, then appropriate filtering based on destination
+      IP prefixes shall be used. Given the air gap on Earth for the
+      Internet, there shall be no default route advertised in space
+      that could for example point to Earth Internet. [TLI: Vehemently
+      disagree.] </t>
     </section>
   </middle>
   <back>
