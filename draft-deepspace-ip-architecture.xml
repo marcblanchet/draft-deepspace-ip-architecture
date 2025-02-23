@@ -312,16 +312,13 @@
 	</t>
         <t>
 	  This store-and-forward mechanism requires proper
-	  provisioning of storage at each forwarding interface for the
+	  provisioning of storage for the
 	  target deployment and usage. Mechanisms such as ECN (<xref
-	  target="ecn"/>) can be used to signal storage congestion can
-	  be used to request that end nodes throttle their
-	  transmissions.  If the appropriate queue is full, then the
-	  interface MAY drop packets and MAY send ICMP error messages
-	  to the source, so that the transport protocol can recover by
-	  resending the dropped packets. The choice of which packets
-	  to drop during a queue congestion event depends on the
-	  queuing policies configured in the node, which may be a
+      target="ecn"/>) can be used to signal storage congestion can
+      be used to request that end nodes throttle their
+      transmissions. If the storage is full, then
+      packets must be dropped. The choice of which packets
+	  to drop depends on the policies configured on the node, which may be a
 	  function of traffic class, source or destination IP
 	  addresses, flow labels, or other parameters. An example is
 	  described in <xref target="I-D.blanchet-tvr-forwarding"/>.
