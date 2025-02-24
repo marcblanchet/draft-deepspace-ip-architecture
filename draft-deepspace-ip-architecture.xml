@@ -578,8 +578,7 @@
         <reference anchor="ioag-mars" target="https://www.ioag.org/Public%20Documents/MBC%20architecture%20report%20final%20version%20PDF.pdf"><front><title>The Future
                 Mars Communications Architecture, Report of the Interagency Operations Advisory Group
                 </title><author><organization>Mars and Beyond Communications Architecture Working Group, Interagency Operations Advisory Group</organization></author><date year="2022" month="February"/></front></reference>
-        <reference anchor="picoquic-poc" target="https://www.privateoctopus.com/2023/02/07/quic-to-mars.html"><front><title>QUIC to Mars</title><author initials="C." surname="Huitema" fullname="Christian Huitema"/><date year="2023" month="February"/></front></reference>
-        <reference anchor="picoquic" target="https://github.com/private-octopus/picoquic"><front><title>picoquic</title><author initials="C." surname="Huitema" fullname="Christian Huitema"/></front></reference>
+        
         <reference anchor="curl" target="https://curl.se"><front><title>Curl</title><author/></front></reference>
         <reference anchor="CCSDSWEB" target="https://ccsds.org"><front><title>Consultative Committee for Space Data Systems</title><author><organization>CCSDS</organization></author></front></reference>
         <reference anchor="mro" target="https://science.nasa.gov/mission/mars-reconnaissance-orbiter/"><front><title>Mars Reconnaissance Orbiter</title><author/></front></reference>
@@ -595,8 +594,9 @@
     </references>
     <section anchor="Acknowledgements" numbered="false">
       <name>Acknowledgements</name>
-      <t>This work started by reassessing the use of the whole IP stack in the context of deep space. Soon, QUIC was identified as the key technology for this endeavour. Christian Huitema was very helpful in not only confirming the ability to use QUIC but also took the time and effort to test and modify its picoquic stack<xref target="picoquic"/> to confirm the initial hypothesis<xref target="picoquic-poc"/>. Its involvement and confirmation are the key for the launch of this work. Then, Martin Thompson has been also kind to take time to answer initial questions on QUIC, further confirming the possibility of using QUIC for deep space. Since then, many individuals have provided significant comments and perspectives on this subject.</t>
-      <t>This document and its underlying work has been reviewed and discussed by many, who have provided valuable feedback and comments, including disagreements, and made an overall more solid document. These people are, in no specific order: TBD.</t>
+      <t>This work started by reassessing the use of the whole IP stack in the context of deep space discussed in <xref
+          target="I-D.many-deepspace-ip-assessment"/> where early contributors are acknowledged.</t>
+      <t>This document and its underlying work has been reviewed and discussed by many, who have provided valuable feedback and comments, including disagreements, and made an overall more solid document. These people are, in no specific order: Padme Pillay-Esnault, Marius Feldmann.</t>
     </section>
   </back>
 </rfc>
