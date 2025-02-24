@@ -313,10 +313,7 @@
         <t>
 	  This store-and-forward mechanism requires proper
 	  provisioning of storage for the
-	  target deployment and usage. Mechanisms such as ECN (<xref
-      target="ecn"/>) can be used to signal storage congestion can
-      be used to request that end nodes throttle their
-      transmissions. If the storage is full, then
+	  target deployment and usage. If the storage is full, then
       packets must be dropped. The choice of which packets
 	  to drop depends on the policies configured on the node, which may be a
 	  function of traffic class, source or destination IP
@@ -433,20 +430,6 @@
         <t>Other transports such as TCP <xref target="RFC9293"/>, SCTP
 	<xref target="RFC9260"/>, DCCP <xref target="RFC4340"/> and others were not investigated for their suitability in space.</t>
       </section>
-      <section anchor="ecn">
-        <name>Explicit Congestion Notification (ECN)</name>
-        <t>Explicit Congestion Notification (ECN) <xref
-        target="RFC3168"/> enables a network forwarder to signal to
-        the sources to throttle down in the context of congestion. In
-        a deep space scenario where relays will be buffering packets,
-        congestion occurs when the buffer is nearly full. ECN enables
-        the forwarders to signal that issue. Given delays and
-        disruptions that mean the reception by the source may take a
-        longer time, the forwarders should be proactive and signal
-        based on the types of links and the actual rate of storage
-        usage. IP clients with QUIC should process the received ECN
-        signals appropriately.</t>
-      </section>
     </section>
     <section anchor="http-section">
       <name>HTTP</name>
@@ -556,7 +539,6 @@
           <name>Informative References</name>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.768.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.1157.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.3168.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4271.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4340.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4655.xml"/>
