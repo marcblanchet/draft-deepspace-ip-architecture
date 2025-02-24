@@ -526,10 +526,7 @@
       to prevent inappropriate traffic from entering deep space
       links. If communications from Mars may only occur to Earth, but
       not to the Moon, then appropriate filtering based on destination
-      IP prefixes shall be used. Given the air gap on Earth for the
-      Internet, there shall be no default route advertised in space
-      that could for example point to Earth Internet. [TLI: Vehemently
-      disagree.] </t>
+      IP prefixes shall be used.</t>
     </section>
   </middle>
   <back>
