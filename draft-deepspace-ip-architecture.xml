@@ -303,11 +303,11 @@
 	  large and variable latency.
 	</t>
         <t>
-	  If an IP router has an interface on an intermittent link,
-	  then a queueing discipline should be used to
-	  store packets. This might be implemented as a deep queue with
+	  If an IP forwarder has an interface on an intermittent link, and that link is down,
+      some destinations may become unreachable when there is no alternate route. In this case,
+	  the forwarder store the packets locally instead of dropping them. This might be implemented as a deep queue with
 	  active queue management (AQM) <xref target="RFC7567"/>. When the
-	  link to the next hop is up again, maybe minutes or hours
+	  route to the destination is back, on the same link or a different link, maybe minutes or hours
 	  later, the stored packets can be transmitted.
 	</t>
         <t>
