@@ -527,6 +527,8 @@
       links. If communications from Mars may only occur to Earth, but
       not to the Moon, then appropriate filtering based on destination
       IP prefixes shall be used.</t>
+      <t>Storage in IP forwarders may become full by normal traffic or by malicious traffic that could become a denial-of-service attack.
+          Appropriate policies and measures should be put in place in those forwarders to drop packets in advance to avoid the depletion of storage space and to mitigate such attacks.</t>
     </section>
   </middle>
   <back>
