@@ -50,8 +50,8 @@
     <abstract>
       <t>
 	Deep space communications involve long delays (e.g., Earth to
-	Mars is 4-20 minutes) and intermittent communications, because
-	of orbital dynamics. The IP protocol stack used on the Internet is
+	Mars is 4-24 minutes) and intermittent communications, because
+	of orbital dynamics. The IP protocol stack used on Earth's Internet is
 	based on assumptions of shorter delays and mostly uninterrupted
 	communications. This document describes the architecture of the
 	IP protocol stack tailored for its use in deep space. It
@@ -94,7 +94,8 @@
 	target="I-D.many-deepspace-ip-assessment"/> revisited the
 	initial assessment of not using IP and concluded that the IP
 	stack is viable in deep space, given the IP stack evolution
-	that happened since the original evaluation. This document
+	that happened since the original evaluation.</t>
+      <t>This document
 	defines an architecture to use IP in deep space networking. IP
 	in deep space means running IP over deep space layer-2 links,
 	a reliable transport over IP, applications protocols over that
@@ -120,10 +121,7 @@
 	Since the Moon is a few light seconds away from Earth, it is
 	possible to configure and run various IP-based protocols and
 	applications to make it "work". Mars with a much longer delay
-	is more difficult. Therefore, this document uses Mars as the
-	base example, knowing that if it works for Mars, a much harder
-	problem, it could be replicated easily for the Moon or other
-	networks made with relays around a celestial body. This
+	is more difficult. This
 	framework would also work for longer delays, such as reaching
 	Jupiter or the whole Solar System Internet (SSI), but it is
 	not specifically discussed. This document uses "deep space"
@@ -137,16 +135,13 @@
       for non-space use cases. While this document focuses on the deep
       space use case, it shall work for the other use cases of BP, but
       these use cases are outside of the scope of this document.</t>
-      <t>Space missions are typically planned for many years and are
-      long-lived, spanning years or even decades. Spacecraft are
-      controlled from Earth and therefore should always be manageable
-      from Earth. Given the remoteness and the difficulty of physically accessing the spacecraft software upgrades and configuration changes are avoided whenever possible.</t>
       <t>As with the Bundle protocol, this framework proposes to use
       IP in deep space with a similar store-and-forward
       paradigm. Therefore, the IP layer has to deal with the fact that
       a destination may not be currently reachable and that IP packets
       could be stored for an unusual amount of time, such as minutes,
-      hours, or days, in the forwarding device waiting for a new
+      hours, or days, in the forwarding device waiting for reachability back
+      because of a new
       link-up  opportunity. The transport layer should be able to work
       with long and variable delays, including intermittent
       communications. The application protocols and the applications
@@ -335,15 +330,41 @@
       </section>
     </section>
     <section>
-      <name>IP Routing</name>
+      <name>IP Addressing and Routing</name>
+      <section title="Addressing">
+    <t>
+      The IP address space is a hierarchical namespace where
+      ranges of addresses are encoded as "prefixes".  Individual
+      domains advertise prefixes to the broader Internet
+      and assign these addresses internally. Prefixes may be
+      aggregated into less-specific prefixes, which makes the
+      routing subsystem more efficient by decreasing overhead.
+    </t>
+    <t>
+      Space networks provide a unique opportunity to provide
+      extremely efficient routing by assigning a unique prefix or
+      block of addresses per celestial body and its proximal
+      orbits. Management of the IP address space is currently
+      documented in <xref target="RFC7020"/>, but this only covers
+      continental regions and does not provide for addressing for
+      space.
+    </t>
+    <t>
+      Address space for outer space should be managed by a
+      Regional Internet Registry (RIR) and blocks of address space
+      should be allocated for each celestial body of
+      interest. Space service providers should use prefixes
+      assigned by this RIR.
+    </t>
+      </section>
+      <section title="Routing">
       <t>
 	Existing routing protocols require proof of
 	liveness between protocol partners, implemented through
 	the periodic exchange of packets between partners. This is
 	impractical on long-delay or intermittent links, so a PCE
 	<xref target="RFC4655"/> based approach seems appropriate for
-	those domains possibly supplemented by contact plan schedules
-	<xref target="I-D.blanchet-tvr-contactplan"/> <xref
+	those domains possibly supplemented by contact plan schedules<xref
 	target="I-D.ietf-tvr-schedule-yang"/>. Interconnection between
 	domains can still be done with BGP <xref target="RFC4271"/>,
 	but long-delay or intermittent links should be
@@ -357,35 +378,10 @@
       <t>
 	On the surface of celestial bodies and in proximal orbit,
 	traditional protocols are applicable and should be used (e.g.,
-	<xref target="I-D.li-arch-sat"/>).
+	<xref target="RFC9717"/>).
       </t>
-      <section title="Addressing">
-	<t>
-	  The IP address space is a hierarchical namespace where
-	  ranges of addresses are encoded as "prefixes".  Individual
-	  domains advertise prefixes to the broader Internet
-	  and assign these addresses internally. Prefixes may be
-	  aggregated into less-specific prefixes, which makes the
-	  routing subsystem more efficient by decreasing overhead.
-	</t>
-	<t>
-	  Space networks provide a unique opportunity to provide
-	  extremely efficient routing by assigning a unique prefix or
-	  block of addresses per celestial body and its proximal
-	  orbits. Management of the IP address space is currently
-	  documented in <xref target="RFC7020"/>, but this only covers
-	  continental regions and does not provide for addressing for
-	  space.
-	</t>
-	<t>
-	  Address space for outer space should be managed by a single
-	  Regional Internet Registry (RIR) and blocks of address space
-	  should be allocated for each celestial body of
-	  interest. Space service providers should use prefixes
-	  assigned by this RIR.
-	</t>
-      </section>
     </section>
+      </section>
     <section>
       <name>Transport</name>
       <section anchor="udp">
@@ -452,7 +448,7 @@
       case. Similarly, HTTP server implementations have various
       timeout configuration variables that must be set
       properly. Testing with HTTP client Curl and HTTP server nginx
-      and an introduced network delay of 20 minutes showed that HTTP
+      and an introduced network delay of minutes, hours and days showed<xref target="quic-sim"/> that HTTP
       communications work well with basic configuration changes.</t>
       <t>HTTP applications themselves must be developed using an asynchronous pattern and if they have timeouts, they should be adjusted appropriately.</t>
       <t>Internet websites are designed with the assumption of
@@ -517,7 +513,7 @@
       Internet. As an example, TLS has been more carefully examined
       than almost any other secure transport protocol. Moreover, given
       that no changes are made in the protocols, this architecture
-      does not bring new security issues. Deep space security
+      does not bring new security issues on the protocols themselves. Deep space security
       requirements are different than on the existing Internet, but nothing has been found to prevent the conformance of the IP protocol stack to those requirements.</t>
       <t>As it is currently planned, the deep space network shall be
       isolated from the current Internet by an "air gap", to disable
@@ -556,15 +552,14 @@
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9204.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9260.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9293.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9717.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml9/reference.STD.0005.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml9/reference.STD.0086.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.blanchet-tvr-contactplan.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.blanchet-tvr-forwarding.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-masque-quic-proxy.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-netconf-over-quic.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-schc-architecture.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tvr-schedule-yang.xml"/>
-        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.li-arch-sat.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-ip-assessment.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-quic-profile.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
@@ -598,7 +593,7 @@
       <name>Acknowledgements</name>
       <t>This work started by reassessing the use of the whole IP stack in the context of deep space discussed in <xref
           target="I-D.many-deepspace-ip-assessment"/> where early contributors are acknowledged.</t>
-      <t>This document and its underlying work has been reviewed and discussed by many, who have provided valuable feedback and comments, including disagreements, and made an overall more solid document. These people are, in no specific order: Padme Pillay-Esnault, Marius Feldmann.</t>
+      <t>This document and its underlying work has been reviewed and discussed by many, who have provided valuable feedback and comments, including disagreements, and made an overall more solid document. These people are, in no specific order: Padme Pillay-Esnault, Marius Feldmann, Britta Hale.</t>
     </section>
   </back>
 </rfc>
