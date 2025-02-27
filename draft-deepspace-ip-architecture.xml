@@ -147,96 +147,11 @@
       communications. The application protocols and the applications
       themselves should be properly set to wait a longer time than on
       the current Internet to receive a response to a query. Finally, all network services such as routing, security, naming, and network management should also be adapted to this new context. This document is structured around these layers.</t>
+      <t>The key characteristics of space communications and networking, its use case and its requirements are discussed in another document<xref target="I-D.many-tiptop-usecase"/>.</t>
       <section>
         <name>Document and Discussion Location</name>
         <t>The source of this document is located at https://github.com/marcblanchet/draft-deepspace-ip-architecture. Comments or changes are welcomed using a PR or an issue.</t>
         <t>This subject should be discussed on the deepspace@ietf.org mailing list.</t>
-      </section>
-    </section>
-    <section anchor="usecases">
-      <name>Use Cases</name>
-      <t>Multiple countries are developing systems for a sustained
-      lunar presence combining manned and robotic missions, within
-      several years.  IP has been included in the stack for the
-      International Deep Space Interoperability Standards <xref
-      target="idsis"/>, and the LunaNet Interoperability Specification
-      <xref target="lnis"/>.  There is a general intention to extend
-      and reuse systems developed for lunar use for later use on Mars.
-      </t>
-      <t>Separate space agencies and private companies are deploying
-      lunar space stations, orbiters, landers, rovers, habitats,
-      crewed mission elements, and other assets.  Due to the pervasive
-      use and support of IP in modern computing systems, IP is
-      naturally used onboard many space systems, and between
-      co-located systems. As more and more IP-enabled assets become
-      deployed in the lunar vicinity, the opportunities to
-      interconnect them will increase.  Internetworking of lunar (and
-      future Mars) systems is becoming essential, as plans call
-      explicitly for cooperation between mission elements and
-      communications/navigation system assets operated by different
-      space agencies and private companies acting as service
-      providers.  There are expected to be several different lunar
-      network service providers (LNSPs) offering different varieties
-      of relayed and direct services.  We should expect that lunar IP networks should over time become united into larger aggregates, and even into a single interoperable network (as intended with the LunaNet concept).</t>
-      <t>
-	Routing within and between dynamically connected network
-	elements may be handled in various ways, as the practices
-	develop and specific systems are deployed.  Conventional
-	routing approaches are possibly applicable. There will likely
-	be coordination between LNSPs and some methods to share and
-	control pre-determined time-varying static routes like a
-	PCE-based architecture, traffic volume expectations, security
-	policies, etc.  The early steps in lunar networking may not
-	immediately interconnect the Internet directly with the lunar
-	surface, though later on this may become reasonable.
-      </t>
-      <section anchor="examplenetwork">
-        <name>Exemplary Network</name>
-        <t>The example network for this document has deep space links
-        using IP over CCSDS space links <xref
-        target="IPoverCCSDSSpaceLinks"/> and a connected IP network
-        will be established with local network infrastructure and
-        services on and around a celestial body. Orbiters around the
-        celestial body provide connectivity to and from Earth to the
-        devices on the celestial body. For example, a rover on the
-        Mars surface might be connected to a Mars surface IP network
-        which receives intermittent connectivity from a few orbiters
-        with an average of 6 hours per orbit. Some of those orbiters
-        have circular orbits, others elliptical. The latter means that
-        the overpasses are not at a fixed frequency. The orbiters are
-        connected to Earth-based ground stations while in line of
-        sight with Earth. Earth and Mars have a variable signal
-        propagation delay from 4 to 20 minutes. That one-way delay
-        however changes slowly as the planets are orbiting around the
-        Sun.</t>
-        <t>When an orbiter has a direct line of sight with Earth, it can
-	receive from and transmit packets to Earth. During that
-	window, it may also have connectivity to other devices in
-	orbit or on the surface, but very often it does
-	not. Therefore, during those periods where only part of the path is up, the orbiter must buffer the received packets until the next segment becomes available when it forwards the packets and flushes the buffer.</t>
-      </section>
-      <section anchor="marscurrent">
-        <name>Current situation on Mars</name>
-        <t>While the target scenarios for the Moon or Mars are far more complex than what is deployed today, it is useful to know what has been deployed already. This section describes the Mars communications infrastructure as it relates to its layer 2.</t>
-        <t>On Mars, there are a few devices such as rovers and
-        helicopters that are in use. There are currently 5 active
-        orbiters that provide communications relay services between
-        Mars surface and Earth. On Earth, various antennas such as the
-        Deep Space Network (DSN) <xref target="DSN"/> are used to
-        communicate with Mars. The MAROS project at the Jet Propulsion
-        Laboratory is a software broker enabling missions to enter
-        data about communications capabilities such as frequency,
-        bandwidth, and windows of communication time so that rover
-        missions can schedule their communications. Most orbiters,
-        such as the Mars Reconnaissance Orbiter (MRO) <xref
-        target="mro"/>, are scheduled using MAROS. MRO was launched in
-        2005 and has a single 40Mhz processor and over 100GB of
-        solid-state memory. One might expect communications windows to
-        have a constant frequency, however, the reality is that they
-        are highly variable resulting in a very inconsistent
-        round-trip time (RTT) <xref target="marscommstudy"/>.  For
-        example, within 3 months in 2024, the RTT varied from 30
-        minutes to 170 hours.</t>
       </section>
     </section>
     <section anchor="layer2">
@@ -561,6 +476,7 @@
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-schc-architecture.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tvr-schedule-yang.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-ip-assessment.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-tiptop-usecase.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-quic-profile.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
         <reference anchor="IPoverCCSDSSpaceLinks" target="https://public.ccsds.org/Pubs/702x1b1c2.pdf"><front><title>IP OVER CCSDS SPACE LINKS, Blue Book 702</title><author><organization>Consultative Committee on Space Data Systems(CCSDS)</organization></author><date year="2012" month="September"/></front></reference>
@@ -578,15 +494,8 @@
         
         <reference anchor="curl" target="https://curl.se"><front><title>Curl</title><author/></front></reference>
         <reference anchor="CCSDSWEB" target="https://ccsds.org"><front><title>Consultative Committee for Space Data Systems</title><author><organization>CCSDS</organization></author></front></reference>
-        <reference anchor="mro" target="https://science.nasa.gov/mission/mars-reconnaissance-orbiter/"><front><title>Mars Reconnaissance Orbiter</title><author/></front></reference>
-        <reference anchor="DSN" target="https://www.nasa.gov/directorates/somd/space-communications-navigation-program/what-is-the-deep-space-network/"><front><title>Deep Space Network</title><author/></front></reference>
         <reference anchor="quic-sim" target="https://deepspaceip.github.io/meetings/ietf120/ietf120-deepspaceip-simulation-results.pdf"><front><title>Deep Space IP:
             Some simulation results</title><author fullname="Marc Blanchet" initials="M." surname="Blanchet"><organization>Viagenie</organization></author><date month="July" year="2024"/></front></reference>
-        <reference anchor="marscommstudy" target="https://deepspaceip.github.io/meetings/ietf121/ietf121-deepspaceip-mars-communications-study.pdf"><front><title>Earth-Mars Communication Windows Usage Study</title><author fullname="Marc Blanchet" initials="M." surname="Blanchet"><organization>Viagenie</organization></author><date month="October" year="2024"/></front></reference>
-        <reference anchor="idsis" target="https://internationaldeepspacestandards.com/wp-content/uploads/2024/02/communication_reva_final_9-2020.pdf"><front><title>International Communication System
-            Interoperability Standards (ICSIS)</title><author/><date month="September" year="2020"/></front></reference>
-        <reference anchor="lnis" target="https://www.nasa.gov/directorates/somd/space-communications-navigation-program/lunanet-interoperability-specification/"><front><title>LunaNet Interoperability Specification</title><author/><date month="September" year="2022"/></front></reference>
-
       </references>
     </references>
     <section anchor="Acknowledgements" numbered="false">
