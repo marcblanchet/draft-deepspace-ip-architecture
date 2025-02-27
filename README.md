@@ -1,4 +1,4 @@
-# draft-deepspace-ip-architecture
+# draft-tiptop-ip-architecture
 #
 The source of this document is located at [https://github.com/marcblanchet/draft-deepspace-ip-architecture](https://github.com/marcblanchet/draft-deepspace-ip-architecture). Comments or changes are welcome as a PR or an issue.
 
