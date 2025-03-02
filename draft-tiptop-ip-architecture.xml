@@ -56,7 +56,7 @@
 	communications. This document describes the architecture of the
 	IP protocol stack tailored for its use in deep space. It
 	involves buffering IP packets in IP forwarders facing
-	intermittent links, signaling buffer storage near capacity,
+	intermittent links
 	and adjusting transport protocol configuration and application
 	protocol timers. This architecture applies to the Moon, Mars, or
 	general interplanetary networking.
