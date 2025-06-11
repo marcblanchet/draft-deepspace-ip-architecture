@@ -161,6 +161,29 @@
 	  point-to-point link or a string of L2 links.
 	</t>
       </section>
+      <section anchor="dns">
+        <name>DNS</name>
+        <t>
+          Interplanetary DNS queries should be avoided.
+        </t>
+        <t>
+          Early deployments of interplanetary IP networks are expected
+          to be firewalled from the public Internet, so there is no need
+          for public DNS.
+        </t>
+        <t>
+          Some early applications may be able to function without reliance
+          on DNS (i.e. using IP addresses only or some equivalent of
+          hosts.txt), due to initial small size of networks and limited
+          set of corresponding hosts.
+        </t>
+        <t>
+          Terrestrially, authoritative DNS servers can
+          be hosted for interplanetary domains and addresses, but other
+          secondary servers that are pre-loaded with information should
+          be relied on local to other bodies, in cases where DNS is needed.
+        </t>
+      </section>
     </section>
     <section>
       <name>IP Routing</name>
