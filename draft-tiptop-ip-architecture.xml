@@ -1,0 +1,776 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-model href="rfc7991bis.rnc"?>
+<?xml-stylesheet type="text/xsl" href="rfc2629.xslt" ?>
+<!DOCTYPE rfc [
+<!ENTITY nbsp "&#160;">
+<!ENTITY zwsp "&#8203;">
+<!ENTITY nbhy "&#8209;">
+<!ENTITY wj "&#8288;">
+]>
+<rfc xmlns:xi="http://www.w3.org/2001/XInclude" category="info" docName="draft-many-tiptop-ip-architecture-00" ipr="trust200902" obsoletes="" updates="" submissionType="IETF" xml:lang="en" version="3">
+  <front>
+    <title abbrev="IP in Deep Space">An Architecture for IP in Deep Space</title>
+    <seriesInfo name="Internet-Draft" value="draft-many-tiptop-ip-architecture-00"/>
+    <author fullname="Marc Blanchet" initials="MB">
+      <organization>Viagenie</organization>
+      <address>
+        <postal>
+          <country>Canada</country>
+        </postal>
+        <email>marc.blanchet@viagenie.ca</email>
+      </address>
+    </author>
+    <author fullname="Wesley Eddy" initials="WE">
+      <organization>MTI Systems</organization>
+      <address>
+        <postal>
+          <country>USA</country>
+        </postal>
+        <email>wes@mti-systems.com</email>
+      </address>
+    </author>
+    <author fullname="Tony Li" initials="TL">
+      <organization>Juniper Networks</organization>
+      <address>
+        <postal>
+          <country>USA</country>
+        </postal>
+        <email>tony.li@tony.li</email>
+      </address>
+    </author>
+    <area>Internet</area>
+    <workgroup>Internet Engineering Task Force</workgroup>
+    <keyword>dtn</keyword>
+    <keyword>quic</keyword>
+    <keyword>space</keyword>
+    <keyword>deep space</keyword>
+    <keyword>ip</keyword>
+    <keyword>dns</keyword>
+    <keyword>routing</keyword>
+    <abstract>
+      <t>
+	Deep space communications involve long delays (e.g., Earth to
+	Mars is 4-24 minutes) and intermittent communications, because
+	of orbital dynamics. The IP protocol stack used on Earth's Internet is
+	based on assumptions of shorter delays and mostly uninterrupted
+	communications. This document describes the architecture of the
+	IP protocol stack tailored for its use in deep space. It
+	involves buffering IP packets in IP forwarders facing
+	intermittent links
+	and adjusting transport protocol configuration and application
+	protocol timers. This architecture applies to the Moon, Mars, or
+	general interplanetary networking.
+      </t>
+    </abstract>
+  </front>
+  <middle>
+    <section anchor="intro">
+      <name>Introduction</name>
+      <t>
+	Deep space communications involve long delays (e.g., Earth to
+	Mars is 4-20 minutes) and intermittent communications, because
+	of orbital dynamics. Up to now, communications have been done on
+	a layer-2 point-to-point basis, with sometimes the use of
+	relays, but no layer-3 networking has been in use. <xref target="RFC4838"/> reports an assessment done around 25 years
+	ago concluding that the IP protocol stack was not suitable for
+	deep space networking. This result led to the definition of a
+	completely new protocol stack based on a store-and-forward
+	paradigm implemented in the Bundle Protocol(BP) <xref target="RFC9171"/> and its various components, such as
+	convergence-layer adapters (<xref target="RFC9174"/>, <xref target="RFC7122"/>) and BP Security (BPSEC) <xref target="RFC9172"/>.
+      </t>
+      <t>More recently, space agencies plan to deploy IP
+      networks on celestial bodies, such as the Moon <xref target="ioag"/> or Mars<xref target="ioag-mars"/>, on the
+      surface and in orbital vicinity, using layer 2 technologies such
+      as Wi-Fi or 5G. On the surface, the plan is to have a dense
+      network around facilities and habitats.</t>
+      <t>Mission concepts are also based on a cluster of multiple network nodes nearby at Lagrange points.</t>
+      <t>
+	A previous document <xref target="I-D.many-deepspace-ip-assessment"/> revisited the
+	initial assessment of not using IP and concluded that the IP
+	stack is viable in deep space, given the IP stack evolution
+	that happened since the original evaluation.</t>
+      <t>This document
+	defines an architecture to use IP in deep space networking. IP
+	in deep space means running IP over deep space layer-2 links,
+	a reliable transport over IP, applications protocols over that
+	transport, and applying proper routing, security, and network
+	management on that IP network. Reusing the whole IP stack in
+	deep space enables the reuse of all protocols, tools, and
+	software currently used on the Internet. However, as one might
+	already argue, many components of the IP stack cannot be used
+	as is and therefore requires careful configuration and
+	deployment considerations that are discussed in this document.
+      </t>
+      <t>
+	Delay-Tolerant Networking (DTN), also known as Delay and
+	Disruption-Tolerant Networking, has been used to identify the
+	problem space, and since the solution was based on the Bundle
+	protocol, DTN has also been associated with the Bundle
+	protocol. This document tries to solve the DTN problem using
+	the Internet Protocol stack. Therefore, in this document, the
+	DTN keyword is used to name the problem space, not the Bundle
+	protocol solution.
+      </t>
+      <t>
+	Since the Moon is a few light seconds away from Earth, it is
+	possible to configure and run various IP-based protocols and
+	applications to make it "work". Mars with a much longer delay
+	is more difficult. This
+	framework would also work for longer delays, such as reaching
+	Jupiter or the whole Solar System Internet (SSI), but it is
+	not specifically discussed. This document uses "deep space"
+	extensively as opposed to "space" which often includes
+	earth-orbiting communications, which are not covered in this
+	document. Even if the definition of deep space per the ITU
+	does not include the Moon, this document applies to IP
+	networks on the Moon.
+      </t>
+      <t>It should also be noted that DTN and BP were also designed
+      for non-space use cases. While this document focuses on the deep
+      space use case, it shall work for the other use cases of BP, but
+      these use cases are outside of the scope of this document.</t>
+      <t>As with the Bundle protocol, this framework proposes to use
+      IP in deep space with a similar store-and-forward
+      paradigm. Therefore, the IP layer has to deal with the fact that
+      a destination may not be currently reachable and that IP packets
+      could be stored for an unusual amount of time, such as minutes,
+      hours, or days, in the forwarding device waiting for reachability back
+      because of a new
+      link-up  opportunity. The transport layer should be able to work
+      with long and variable delays, including intermittent
+      communications. The application protocols and the applications
+      themselves should be properly set to wait a longer time than on
+      the current Internet to receive a response to a query. Finally, all network services such as routing, security, naming, and network management should also be adapted to this new context. This document is structured around these layers.</t>
+      <t>The key characteristics of space communications and networking, its use case and its requirements are discussed in another document<xref target="I-D.many-tiptop-usecase"/>.</t>
+      <section>
+        <name>Document and Discussion Location</name>
+        <t>The source of this document is located at https://github.com/marcblanchet/draft-deepspace-ip-architecture. Comments or changes are welcomed using a PR or an issue.</t>
+        <t>This subject should be discussed on the deepspace@ietf.org mailing list.</t>
+      </section>
+    </section>
+    <section anchor="layer2">
+      <name>Layer 2 in Deep Space</name>
+      <section anchor="layer2surface">
+        <name>Celestial Body Surface</name>
+        <t>The Interagency Operations Advisory Group (IOAG) <xref target="ioag"/> has defined the communications architecture
+	for the Moon and Mars. On the celestial body surface, it is planned to use 3GPP and Wi-Fi link layer protocols. IP will be used over these link layers.</t>
+      </section>
+      <section anchor="layer2ccsds">
+        <name>Deep Space Links</name>
+        <t>Deep space links typically use the Consultative Committee
+	for Space Data Standards (CCSDS) <xref target="CCSDSWEB"/>
+	standards for link layers, such as Telecommand (TC) <xref target="CCSDS_TC"/>, Telemetry (TM) <xref target="CCSDS_TM"/>,
+	Advanced Orbiting Systems (AOS) <xref target="CCSDS_AOS"/>,
+	Proximity1 (Prox1) <xref target="CCSDS_PROX1"/> or the Unified
+	Space Data Link Protocol (USLP) <xref target="CCSDS_USLP"/>. CCSDS has defined a generic
+	encapsulation mechanism for the payloads for all these link
+	layer protocols with IP as an encapsulated protocol
+	<xref target="IPoverCCSDSSpaceLinks"/> <xref target="SANAIPEHeaderRegistry"/>. Therefore, IP packets can be transported over any CCSDS link layers.</t>
+      </section>
+      <section anchor="layer2orbit">
+        <name>Celestial Body Orbits</name>
+        <t>For celestial body orbits, IOAG has planned the use of CCSDS
+	link layer protocols. However, as on Earth, it may be possible
+	to use 6G-NTN technology around celestial bodies, such as in
+	lunar or Martian orbits. 6G-NTN technologies use IP as its
+	layer 3 technology.</t>
+      </section>
+    </section>
+    <section anchor="ip">
+      <name>Internet Protocol</name>
+      <t>IPv4 or IPv6 packets can be carried as is over long delays
+      and disruptions, as IP has no notion of time. Originally,
+      the Time To Live (TTL) field of IPv4 was defined based on time
+      <xref target="STD5"/>, but it has been effectively implemented
+      as a hop count, which was renamed as "Hop Count" in IPv6 <xref target="STD86"/>. Nothing needs to be changed to the IP protocol or its packet format.</t>
+      <section>
+        <name>IP Forwarding and Store-and-Forward</name>
+        <t>
+	  For deep space applications, an IP packet may need to be
+	  stored temporarily over much longer periods than are typical
+	  for the Internet when the next hop is currently unreachable
+	  or undefined, which can happen due to orbital dynamics. This
+	  is commonly referred to as "store-and-forward" and bears no
+	  relationship to the same term when used regarding
+	  switch architectures.
+	</t>
+        <t>
+	  This store and forward mechanism may be implemented at layer
+	  2 as is currently done by the Mars orbiters. In this case,
+	  the frames are stored, regardless of payload type.  In this
+	  case, IP packets are unaware of the store-and-forward and no
+	  changes are needed in the IP forwarding function.  The L2
+	  network is just behaving as a point-to-point link with a
+	  large and variable latency.
+	</t>
+        <t>
+	  If an IP forwarder has an interface on an intermittent link, and that link is down,
+      some destinations may become unreachable when there is no alternate route. In this case,
+	  the forwarder store the packets locally instead of dropping them. This might be implemented as a deep queue with
+	  active queue management (AQM) <xref target="RFC7567"/>. When the
+	  route to the destination is back, on the same link or a different link, maybe minutes or hours
+	  later, the stored packets can be transmitted.
+	</t>
+        <t>
+	  This store-and-forward mechanism requires proper
+	  provisioning of storage for the
+	  target deployment and usage. If the storage is full, then
+      packets must be dropped. The choice of which packets
+	  to drop depends on the policies configured on the node, which may be a
+	  function of traffic class, source or destination IP
+	  addresses, flow labels, or other parameters. An example is
+	  described in <xref target="I-D.blanchet-tvr-forwarding"/>.
+	</t>
+      </section>
+      <section anchor="headercompression">
+        <name>Header Compression</name>
+        <t>
+	  Deep space links are point-to-point links and bandwidth in
+	  space is very valuable, so header compression is very effective. Static Context Header Compression (SCHC) <xref target="I-D.ietf-schc-architecture"/> is a header
+	  compression technique that relies on rules in a static
+	  context and is, therefore, more efficient for deep
+	  space. SCHC should be considered on a deep space
+	  point-to-point link or a string of L2 links.
+	</t>
+      </section>
+    </section>
+    <section>
+      <name>IP Addressing and Routing</name>
+      <section title="Addressing">
+        <t>
+      The IP address space is a hierarchical namespace where
+      ranges of addresses are encoded as "prefixes".  Individual
+      domains advertise prefixes to the broader Internet
+      and assign these addresses internally. Prefixes may be
+      aggregated into less-specific prefixes, which makes the
+      routing subsystem more efficient by decreasing overhead.
+    </t>
+        <t>
+      Space networks provide a unique opportunity to provide
+      extremely efficient routing by assigning a unique prefix or
+      block of addresses per celestial body and its proximal
+      orbits. Management of the IP address space is currently
+      documented in <xref target="RFC7020"/>, but this only covers
+      continental regions and does not provide for addressing for
+      space.
+    </t>
+        <t>
+      Address space for outer space should be managed by a
+      Regional Internet Registry (RIR) and blocks of address space
+      should be allocated for each celestial body of
+      interest. Space service providers should use prefixes
+      assigned by this RIR.
+    </t>
+      </section>
+      <section title="Routing">
+        <t>
+	Existing routing protocols require proof of
+	liveness between protocol partners, implemented through
+	the periodic exchange of packets between partners. This is
+	impractical on long-delay or intermittent links, so a PCE
+	<xref target="RFC4655"/> based approach seems appropriate for
+	those domains possibly supplemented by contact plan schedules<xref target="I-D.ietf-tvr-schedule-yang"/>. Interconnection between
+	domains can still be done with BGP <xref target="RFC4271"/>,
+	but long-delay or intermittent links should be
+	avoided. Domains straddling such links must provide
+	proxy advertisements for prefixes reachable across such links.
+      </t>
+        <t>
+	Optimal routing for domains with intermittent links is out of
+	scope for this document.
+      </t>
+        <t>
+	On the surface of celestial bodies and in proximal orbit,
+	traditional protocols are applicable and should be used (e.g.,
+	<xref target="RFC9717"/>).
+      </t>
+      </section>
+    </section>
+    <section>
+      <name>Transport</name>
+      <t>
+
+Modern transport protocols and stacks share similar algorithms for common
+transport needs.  This section first addresses general transport issues, and
+then addresses use of specific individual transport protocols.  While there
+have been academic research experiments in developing new protocols
+specifically for interplanetary transport, they are not directly considered
+here because the goal is to leverage Internet standards and commonly available
+software.
+
+      </t>
+      <section anchor="general-transport">
+        <name>General Transport Issues</name>
+        <t>
+
+Internet transport protocols and transport stacks have developed to meet the
+needs for different classes of applications on the terrestrial Internet, using
+similar algorithms with parameters that are tuned for typical conditions.  Some
+of these algorithms might simply be paramterized differently for interplanetary
+network paths, while other algorithms may have fundamental challenges.  In some
+cases, minor adjustments (or no adjustment) will suffice for Earth-lunar
+networking, but Earth-Mars and other cases pose more significant challenges.
+
+        </t>
+        <ul>
+          <li><t>
+
+Protocol Negotiation / "Happy Eyeballs" - Due to presence of both IPv4 and IPv6
+in the terrestrial Internet, applications or transport stacks may include
+"happy eyeballs" capabilities <xref target="RFC8305"/> that make use of
+multiple DNS queries and connection attempts for different addresses and
+address families returned.  Downsides to this in interplanetary applications
+might include (1) the additional load on interplanetary DNS, (2) unnecessary
+use of network capacity for paralel connection attempts (e.g. if 0-RTT data
+transmission is used), and (3) unnecessary additional transport state
+maintained for an extended period of time.  If applications for interplanetary
+use initially rely on either fixed IP addresses (instead of DNS names) or a
+single address family (e.g. IPv6), then there should be no downsides to
+presence of happy eyeballs algorithms within the transport stack.  If happy
+eyeballs is present and triggered, then the values in section 8 of <xref
+target="RFC8305"/> should be carefully considered and tuned based on the DNS
+and path expectations (e.g. resolution delay, first address family count,
+connection attmept delay, minimum connection attempt delay, and maximum
+connection attempt delay) as most of these values are not likely to be
+appropriate even for Earth-lunar paths.
+
+          </t></li>
+          <li><t>
+
+Connection Initiation / Handshaking - Very long-lived connection state may be
+used to avoid connection initiation in some cases, e.g. by establishing state
+prior to launch and using those pre-established connections long-term.
+However, this will not be possible in all cases for all applications, if flows
+can't be planned pre-launch.  Due to the need to be robust to stale packets,
+errors, and denial of service attacks, Internet transports include handshaking
+state machines, such as 3-way and 4-way handshakes for connection establishment
+(the case can be even worse for some transport protocol and TLS combinations).
+Since the interplanetary round trip times may be larger than the duration of
+contact periods, these handshaking mechanisms are very inefficient.  Though
+they are tolerable in cases such as between Earth and lunar networks, they are
+stifling for Earth-Mars and other interplanetary network paths.  Transports,
+such as QUIC, that have the ability to resume based on shared state from prior
+application connections or to rapidly start transferring data ("0RTT") can be
+suitably efficient, once initial state is obtained; however, they still require
+a complete initial handshake with the full set of round trip times imposed.
+For interplanetary use, it may be beneficial to find ways to securely pre-set
+information to allow this more efficient startup, without requiring the full
+initial handshake even once.
+
+          </t></li>
+          <li><t>
+
+Capability / Feature Negotiation - Ideally, transport protocol feature
+advertisements and agreements can be completed prior to launch as part of
+connection pre-establishment and cached long-term.  Any negotiation of
+additional features that requires full round trip times is prohibitive for
+general interplanetary use, espcially if data transmission is stalled while
+negotiation takes place.  Commonly, much negotiation can occur in the initial
+connection handshake.  It will be beneficial if transport stacks can cache (or
+securely pre-configure caches) of pre-negotiated features with typical hosts
+that they plan to communicate with during the course of a mission.
+
+          </t></li>
+          <li><t>
+
+Retransmission - Reliable transport protocols typically keep retransmission
+timers, computed based on round trip time samples <xref target="RFC6298"/>
+<xref target="RFC8961"/>.  Since it may be impossible to even take RTT
+measurements within a contact window, and RTTs may vary significantly across
+contact windows, this type of algorithm is not appropriate for interplanetar
+use.  Additionally, default values may be in ranges such as 1 second, that are
+inappropriate for even Earth-lunar paths.  Based on the known propagation times
+for interplanetary paths and predicted contacts, either pre-configured values
+or new algorithms should be used.
+
+          </t></li> 
+          <li><t>
+
+Handling Failures - Aside from retransmission, there are also other types of
+timers and counters in transport stacks, for things including DNS resolution,
+connection establishment retries, connection keep-alives, user timeouts, and
+delayed acknowledgement.  Additionally, transports receive and respond to ICMP
+messages that indicate other different types of errors from within the network.
+Similar to the case of retransmission timers, other types of timers that
+support failure handling should be adjusted based on estimated propagation and
+forwarding times.  Other heuristics for validating ICMP messages and responding
+may need to be considered.
+
+          </t></li>
+          <li><t>
+
+Congestion Control - Internet congestion control algorithms are based on timely
+receipt of feedback in order to detect losses, delays, or other signals, and
+typically attempt to react rapidly.  Two challenges in the interplanetary case
+include: (1) The relative delays on interplanetary paths are much longer
+(preventing "rapid" response) and may vary in orders of magnitude between
+segments, e.g. across a terrestrial segment, an Earth-Mars segment, and a Mars
+orbit/surface segment.  Congestion may occur in low-latency portions of the
+network, but fail to be detected quickly because loss/acknowledgement
+information propagates and feeds back too slowly, leading to sustained loss due
+to unresponsiveness in a low-latency portion of the network.  (2) By the time
+feedback is received, it is badly out of date, if not completely irrelevant to
+the future.  The advent of IP-based in-network storage for scheduled
+interplanetary links also changes the way that congestion can be measured (e.g.
+in delay-based protocols).  In the near-term, and in present space mission
+operations, it can be assumed that data link capacity is explicitly planned and
+scheduled end-to-end in order to accomodate mission needs.  This makes
+congestion control algorithms largely replaceable with simple nominal rate and
+flow control.  However, for larger and more dynamic future interplanetary
+networks, and shared trunk links, etc., it will be beneficial to develop more
+appropriate congestion control methods, including possibly more effective
+network-based signaling/feedback, rather than simply end-to-end feedback-based
+mechanisms.
+
+          </t></li>
+          <li><t>
+
+Path MTU Discovery - Internet transports typically include probing algorithms
+and rely on end-to-end acknowledgements (or in legacy cases ICMP errors) in
+order to infer the maximum packet sizes that can be used at any time without
+introducing unnecessary IP fragmentation.  Because for interplanetary cases,
+feedback may be slow or unrelated to the current or future paths by the time it
+arrives, it may be more beneficial to simply rely on known / pre-arranged path
+MTU limitations that can be communicated between interplanetary providers and
+other connected providers and users.  Especially for higher bandwidth links, it
+may be beneficial for this to be significantly larger than the minimum Internet
+MTU values that are normally assumed.  For instance, terrestrially many systems
+use 9000+ byte MTUs.  MTUs in interplanetary networks may vary due to the range
+of link bandwidths, and simultaneous desires to be efficient on fast links
+while also wanting to avoid head-of-line blocking for large packets on
+low-bandwidth links.
+
+          </t></li>
+          <li><t>
+
+Multiple Streams - Several transports allow for applications to send/receive
+multiple independent streams of application data, rather than requiring
+separate connections (and handshakes, and state) for each stream.  Due to the
+need to leverage pre-established state and make efficient use of connectivity
+opportunities, these capabilities can be valuable to leverage for
+interplanetary use, however, specific mechanisms may need to be
+evaluated/tuned/modified e.g. to avoid additional round trip times.
+
+          </t></li>
+          <li><t>
+
+Multipath Transport - There may be a variety of different physical paths
+between planets (e.g. using relays or direct links), and using multiple paths
+simultaneously is a common way to increase reliability for mission data, or to
+increase throughput for an application.  However, typical Internet multipath
+transport algorithms may only switch between paths (e.g. for failover), or
+allow different streams to use different paths, rather than replicating data.
+In this case, such replication would need to be done at a higher layer through
+separate application connections per path, if required by a mission.
+
+          </t></li>
+          <li><t>
+
+Forward Error Correction (FEC) - Generally, FEC is expected to be implemented
+below the link layer.  Within the transport layer, FEC and/or erasure coding
+are not common in typical Internet use today, though FEC and/or erasure coding
+can be integrated with different protocol stacks.  Because it can allow for
+data recovery in the case of packet losses, without suffering extra round
+trips, or requiring bidirectional connectivity, this may be valuable to
+incorporate/enable in future interplanetary transport stacks.
+
+          </t></li>
+        </ul>
+      </section>
+
+      <section anchor="udp">
+        <name>UDP</name>
+        <t>UDP <xref target="RFC768"/> has no notion of time and,
+	therefore can be used as-is in deep space. Hence, protocols using UDP transport can be used in space as-is, if they do not rely on time or can be configured with timeouts appropriate in deep space.</t>
+      </section>
+      <section anchor="quic-section">
+        <name>QUIC</name>
+        <t>QUIC <xref target="RFC9000"/> like most IP transport protocols
+	implements congestion control mechanisms, which, based on
+	various metrics such as calculated delays or packet loss, pace
+	the rate of sending packets at the source node to decrease the
+	perceived congestion in the network. QUIC supports many new
+	features suitable and useful in deep space such as 1 RTT for
+	connection establishment and security, mobility, 0 RTT,
+	streams, user space, etc. [TLI: This sentence needs more words
+	to explain these references.]</t>
+        <t>Current implementations of QUIC typically set various
+	transport configuration parameters suitable for the Internet
+	environment, expecting an RTT to be in the hundreds of milliseconds
+	and a normally always-connected network. Therefore, QUIC
+	stacks using default configurations will not work in deep
+	space. However, studies and simulations <xref target="quic-sim"/> showed that with proper configuration of
+	parameters, QUIC stacks can support the delays and disruptions
+	in deep space. <xref target="I-D.many-deepspace-quic-profile"/> describes how to
+	properly configure a QUIC stack for deep space applications,
+	where QUIC is unaware of disruptions. If the transport is
+	aware of the disruptions, further optimizations are possible.</t>
+        <t>Having multiple streams and applications within a single
+	QUIC connection is valuable and useful for deep space. A
+	ground station may set up the initial QUIC connection with a spacecraft and then carry all needed applications and streams over that same connection for the whole duration of the mission.</t>
+        <t>Session keys and certificate lifetimes together with certificate validation and trust chain anchors need to be carefully configured and handled.</t>
+        <t>QUIC proxies <xref target="I-D.ietf-masque-quic-proxy"/>
+	can be used at the edge of space to isolate, apply policies, or
+	optimize traffic at the ingress/egress to a celestial body network.</t>
+      </section>
+      <section>
+        <name>Other Transports</name>
+        <t>Other transports such as TCP <xref target="RFC9293"/>, SCTP
+	<xref target="RFC9260"/>, DCCP <xref target="RFC4340"/> and others were not investigated for their suitability in space.</t>
+      </section>
+    </section>
+    <section anchor="http-section">
+      <name>HTTP</name>
+      <t>HTTP by itself has no notion of time. An HTTP request and
+      response may take minutes or hours to be completed. However,
+      current infrastructure and software on the Internet have various time-related configurations that will not work well in the deep space context.</t>
+      <t>HTTP headers containing time, such as Cache-Control and
+      Expires <xref target="RFC9111"/>, should not be used or if used,
+      must be set to large enough values to cover the longest delay so
+      that expiration does not happen before the actual data arrives
+      at the destination. As with any HTTP application and content on
+      the Internet, these headers should be set properly based on the
+      deployment use case, which is even more important for deep
+      space. Similarly, when continuous content transfer is used, as
+      with 100-Continue <xref target="RFC9110"/>, proper values for
+      headers should be set.</t>
+      <t>HTTP clients and servers typically have default timeouts that
+      should be modified. For example, curl <xref target="curl"/> has the "-m" option for this use
+      case. Similarly, HTTP server implementations have various
+      timeout configuration variables that must be set
+      properly. Testing with HTTP client Curl and HTTP server nginx
+      and an introduced network delay of minutes, hours and days showed<xref target="quic-sim"/> that HTTP
+      communications work well with basic configuration changes.</t>
+      <t>HTTP applications themselves must be developed using an asynchronous pattern and if they have timeouts, they should be adjusted appropriately.</t>
+      <t>Internet websites are designed with the assumption of
+      hundreds of milliseconds delay and relatively always connected,
+      where pages contain multiple queries to get further resources,
+      media, queries to web services, and downloading additional code
+      and frameworks. This could work in theory in space, but it will
+      not be optimal, as multiple queries will be generated and
+      therefore take multiple RTT before the whole page is received
+      complete. This issue can be mitigated by using various
+      techniques such as Web Assembly <xref target="wasm"/> or
+      pre-caching. Moreover, it could be possible to have simple HTML
+      pages with no or very few references and no media content 
+      that was not locally cached. An example would be a rover on Mars presenting an HTTP server with a base and bare HTML page to offer basic info on its status (maybe all in text) and some additional detailed pages, most likely also in base HTML text. However, it is foreseen that most applications based on QUIC-HTTP transport in deep space would be using REST or similar asynchronous patterns and not typical web browsing.</t>
+      <t>Caching should be used extensively on space networks to maximize local fetching. Preemptive caching by pre-populating caches with data that shall be used locally on the celestial body network shall be done as much as possible to provide better response time on the local celestial body network.</t>
+      <t>QPACK <xref target="RFC9204"/> should be considered for higher bandwidth efficiency.</t>
+    </section>
+    <section>
+      <name>Network services</name>
+      <section anchor="dns">
+        <name>Naming</name>
+        <t>
+	  For small-scale deployments, one can use IP addresses
+	  directly or a mapping from a name to an IP address such as
+	  /etc/hosts.  However, this does not provide easy dynamic
+	  updates, scaling by hierarchy, service discovery,
+	  authentication of records, etc. Therefore, the Domain Name
+	  System (DNS) shall be considered early on in the space
+	  deployment. However, naming hierarchy and infrastructure
+	  must be carefully designed to avoid name resolution over
+	  deep space links, given that answers may come after minutes
+	  or hours. There are clear advantages of having the space
+	  name hierarchy anchored to the current Internet root, as it
+	  enables DNSSEC through the same security infrastructure
+	  currently used and deployed. Using the same root also does
+	  not require new policies. A new TLD or a new root is way
+	  more complicated and does not bring any significant value
+	  compared to using the current domain tree.</t>
+        <t>Care must be taken to manage key lifecycles and resource
+	record lifetimes. <xref target="I-D.many-dnsop-dns-isolated-networks"/> discusses the
+	various methods and the naming hierarchy that should be used in space.</t>
+      </section>
+      <section>
+        <name>Network Management</name>
+        <t>NETCONF <xref target="RFC6241"/> and RESTCONF <xref target="RFC8040"/> shall be used with proper configuration
+	values to avoid timeouts and appropriate transport. NETCONF
+	over QUIC transport <xref target="I-D.ietf-netconf-over-quic"/> or RESTCONF over HTTP over QUIC transport shall be configured with appropriate QUIC transport parameters as discussed in <xref target="quic-section"/>.</t>
+        <t>While being declared historic in IETF, SNMP<xref target="RFC1157"/> runs over UDP and has no notion of time. Therefore, with proper configuration of client timeout, it can be used as is to manage nodes and services in deep space.</t>
+      </section>
+    </section>
+    <section anchor="IANA">
+      <name>IANA Considerations</name>
+      <t>This memo includes no request to IANA.</t>
+    </section>
+    <section anchor="Security">
+      <name>Security Considerations</name>
+      <t>Using the current IP protocol stack in deep space inherits
+      all the work on privacy, cryptography, key management,
+      firewalls, and scrutiny of protocols that are deployed on the
+      Internet. As an example, TLS has been more carefully examined
+      than almost any other secure transport protocol. Moreover, given
+      that no changes are made in the protocols, this architecture
+      does not bring new security issues on the protocols themselves. Deep space security
+      requirements are different than on the existing Internet, but nothing has been found to prevent the conformance of the IP protocol stack to those requirements.</t>
+      <t>As it is currently planned, the deep space network shall be
+      isolated from the current Internet by an "air gap", to disable
+      any direct communications from the Internet to deep space. Moreover, destination IP prefix filtering shall be used to restrict the traffic to only the relevant one for each link. Note that this shall also be implemented in the routing control plane, but additional security might be appropriate to further protect the deep space links.</t>
+      <t>Each celestial network edge device shall have firewall rules
+      to prevent inappropriate traffic from entering deep space
+      links. If communications from Mars may only occur to Earth, but
+      not to the Moon, then appropriate filtering based on destination
+      IP prefixes shall be used.</t>
+      <t>Storage in IP forwarders may become full by normal traffic or by malicious traffic that could become a denial-of-service attack.
+          Appropriate policies and measures should be put in place in those forwarders to drop packets in advance to avoid the depletion of storage space and to mitigate such attacks.</t>
+    </section>
+  </middle>
+  <back>
+    <references>
+      <name>References</name>
+      <references>
+        <name>Informative References</name>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.768.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.1157.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4271.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4340.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4655.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4838.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6241.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7020.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7122.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7567.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8040.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9000.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9110.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9111.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9171.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9172.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9174.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9204.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9260.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9293.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9717.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml9/reference.STD.0005.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml9/reference.STD.0086.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.blanchet-tvr-forwarding.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-masque-quic-proxy.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-netconf-over-quic.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-schc-architecture.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.ietf-tvr-schedule-yang.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-ip-assessment.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-tiptop-usecase.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-quic-profile.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
+        <reference anchor="IPoverCCSDSSpaceLinks" target="https://public.ccsds.org/Pubs/702x1b1c2.pdf">
+          <front>
+            <title>IP OVER CCSDS SPACE LINKS, Blue Book 702</title>
+            <author>
+              <organization>Consultative Committee on Space Data Systems(CCSDS)</organization>
+            </author>
+            <date year="2012" month="September"/>
+          </front>
+        </reference>
+        <reference anchor="SANAIPEHeaderRegistry" target="https://sanaregistry.org/r/ipe_header/">
+          <front>
+            <title>Internet Protocol Extension Header</title>
+            <author/>
+          </front>
+        </reference>
+        <reference anchor="CCSDS_AOS" target="https://public.ccsds.org/Pubs/732x0b4.pdf">
+          <front>
+            <title>AOS Space Data Link Protocol, Blue Book 732.0-B-4</title>
+            <author>
+              <organization>Consultative Committee on Space Data Systems(CCSDS)</organization>
+            </author>
+            <date year="2021" month="October"/>
+          </front>
+        </reference>
+        <reference anchor="CCSDS_TM" target="https://public.ccsds.org/Pubs/132x0b3.pdf">
+          <front>
+            <title>TM Space Data Link Protocol, Blue Book 132.0-B-3</title>
+            <author>
+              <organization>Consultative Committee on Space Data Systems(CCSDS)</organization>
+            </author>
+            <date year="2021" month="October"/>
+          </front>
+        </reference>
+        <reference anchor="CCSDS_TC" target="https://public.ccsds.org/Pubs/232x0b4e1c1.pdf">
+          <front>
+            <title>TC Space Data Link Protocol, Blue Book 232.0-B-4</title>
+            <author>
+              <organization>Consultative Committee on Space Data Systems(CCSDS)</organization>
+            </author>
+            <date year="2021" month="October"/>
+          </front>
+        </reference>
+        <reference anchor="CCSDS_PROX1" target="https://public.ccsds.org/Pubs/211x0b6e1.pdf">
+          <front>
+            <title>Proximity-1 Space Link Protocol—Data Link Layer, Blue Book 211.0-B-6</title>
+            <author>
+              <organization>Consultative Committee on Space Data Systems(CCSDS)</organization>
+            </author>
+            <date year="2020" month="July"/>
+          </front>
+        </reference>
+        <reference anchor="CCSDS_USLP" target="https://public.ccsds.org/Pubs/732x1b2s.pdf">
+          <front>
+            <title>Unified Space Data Link Protocol, Blue Book 732.1-B-2</title>
+            <author>
+              <organization>Consultative Committee on Space Data Systems(CCSDS)</organization>
+            </author>
+            <date year="2021" month="October"/>
+          </front>
+        </reference>
+        <reference anchor="wasm" target="https://github.com/webassembly/spec">
+          <front>
+            <title>WebAssembly Specifications</title>
+            <author>
+              <organization>World Wide Web Consortium(W3C)</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="ioag" target="https://www.ioag.org/Public%20Documents/Lunar%20communications%20architecture%20study%20report%20FINAL%20v1.3.pdf">
+          <front>
+            <title>The Future Lunar Communications Architecture, Report of the Interagency Operations Advisory Group</title>
+            <author>
+              <organization>Lunar Communications Architecture Working Group, Interagency Operations Advisory Group</organization>
+            </author>
+            <date year="2022" month="January"/>
+          </front>
+        </reference>
+        <reference anchor="ioag-mars" target="https://www.ioag.org/Public%20Documents/MBC%20architecture%20report%20final%20version%20PDF.pdf">
+          <front>
+            <title>The Future
+                Mars Communications Architecture, Report of the Interagency Operations Advisory Group
+                </title>
+            <author>
+              <organization>Mars and Beyond Communications Architecture Working Group, Interagency Operations Advisory Group</organization>
+            </author>
+            <date year="2022" month="February"/>
+          </front>
+        </reference>
+        <reference anchor="curl" target="https://curl.se">
+          <front>
+            <title>Curl</title>
+            <author/>
+          </front>
+        </reference>
+        <reference anchor="CCSDSWEB" target="https://ccsds.org">
+          <front>
+            <title>Consultative Committee for Space Data Systems</title>
+            <author>
+              <organization>CCSDS</organization>
+            </author>
+          </front>
+        </reference>
+        <reference anchor="quic-sim" target="https://deepspaceip.github.io/meetings/ietf120/ietf120-deepspaceip-simulation-results.pdf">
+          <front>
+            <title>Deep Space IP:
+            Some simulation results</title>
+            <author fullname="Marc Blanchet" initials="M." surname="Blanchet">
+              <organization>Viagenie</organization>
+            </author>
+            <date month="July" year="2024"/>
+          </front>
+        </reference>
+      </references>
+    </references>
+    <section anchor="Acknowledgements" numbered="false">
+      <name>Acknowledgements</name>
+      <t>This work started by reassessing the use of the whole IP stack in the context of deep space discussed in <xref target="I-D.many-deepspace-ip-assessment"/> where early contributors are acknowledged.</t>
+      <t>This document and its underlying work has been reviewed and discussed by many, who have provided valuable feedback and comments, including disagreements, and made an overall more solid document. These people are, in no specific order: Padme Pillay-Esnault, Marius Feldmann, Britta Hale.</t>
+    </section>
+  </back>
+</rfc>
