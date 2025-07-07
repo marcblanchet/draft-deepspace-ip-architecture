@@ -288,6 +288,200 @@
     </section>
     <section>
       <name>Transport</name>
+      <t>
+
+Modern transport protocols and stacks share similar algorithms for common
+transport needs.  This section first addresses general transport issues, and
+then addresses use of specific individual transport protocols.  While there
+have been academic research experiments in developing new protocols
+specifically for interplanetary transport, they are not directly considered
+here because the goal is to leverage IETF protocols and commonly available
+software.
+
+      </t>
+      <section anchor="general-transport">
+        <name>General Transport Issues</name>
+        <t>
+
+Internet transport protocols and transport stacks have developed to meet the
+needs for different classes of applications on the terrestrial Internet, using
+similar algorithms with parameters that are tuned for typical conditions.  Some
+of these algorithms might simply be parameterized differently for interplanetary
+network paths, while other algorithms may have fundamental challenges.  In some
+cases, minor adjustments (or no adjustment) will suffice for Earth-lunar
+networking.
+
+        </t>
+        <ul>
+          <li><t>
+
+Protocol Negotiation / "Happy Eyeballs" - Due to presence of both IPv4 and IPv6
+in the terrestrial Internet, applications or transport stacks may include
+"happy eyeballs" capabilities <xref target="RFC8305"/> that make use of
+multiple DNS queries and connection attempts for different addresses and
+address families returned.  Downsides to this in interplanetary applications
+might include (1) the additional load on interplanetary DNS (although solutions
+to this are avialable <xref target="I-D.many-tiptop-dns"/>), (2) unnecessary
+use of network capacity for paralel connection attempts (e.g. if 0-RTT data
+transmission is used), and (3) unnecessary additional transport state
+maintained for an extended period of time.  If applications for interplanetary
+use initially rely on either fixed IP addresses (instead of DNS names) or a
+single address family (e.g. IPv6), then there should be no downsides to
+presence of happy eyeballs algorithms within the transport stack.  If happy
+eyeballs is present and triggered, then the values in section 8 of <xref
+target="RFC8305"/> should be carefully considered and tuned based on the DNS
+and path expectations (e.g. resolution delay, first address family count,
+connection attmept delay, minimum connection attempt delay, and maximum
+connection attempt delay) as most of these values are not likely to be
+appropriate even for Earth-lunar paths.
+
+          </t></li>
+          <li><t>
+
+Connection Initiation / Handshaking - Very long-lived connection state may be
+used to avoid connection initiation in some cases, e.g. by establishing state
+prior to launch and using those pre-established connections long-term.
+However, this will not be possible in all cases for all applications, if flows
+can't be planned pre-launch.  Due to the need to be robust to stale packets,
+errors, and denial of service attacks, historically, Internet transports have
+included handshaking
+state machines, such as 3-way and 4-way handshakes for connection establishment
+(the case can be even worse for some transport protocol and TLS combinations),
+although QUIC can established secured connections with only 1 round-trip time.
+Since the interplanetary round trip times may be larger than the duration of
+contact periods, these handshaking mechanisms are very inefficient.  Though
+they are tolerable in cases such as between Earth and lunar networks, they are
+stifling for Earth-Mars and other interplanetary network paths.  Transports,
+such as QUIC, that have the ability to resume based on shared state from prior
+application connections or to rapidly start transferring data ("0RTT") can be
+suitably efficient, once initial state is obtained; however, they still require
+a complete initial handshake with the full set of round trip times imposed.
+For interplanetary use, it may be beneficial to find ways to securely pre-set
+information to allow this more efficient startup, without requiring the full
+initial handshake even once.
+
+          </t></li>
+          <li><t>
+
+Capability / Feature Negotiation - Ideally, transport protocol feature
+advertisements and agreements can be completed prior to launch as part of
+connection pre-establishment and cached long-term.  Any negotiation of
+additional features that requires full round trip times is prohibitive for
+general interplanetary use, especially if data transmission is stalled while
+negotiation takes place.  Commonly, much negotiation can occur in the initial
+connection handshake.  It will be beneficial if transport stacks can cache (or
+securely pre-configure caches) of pre-negotiated features with typical hosts
+that they plan to communicate with during the course of a mission.
+
+          </t></li>
+          <li><t>
+
+Retransmission - Reliable transport protocols typically keep retransmission
+timers, computed based on round trip time samples <xref target="RFC6298"/>
+<xref target="RFC8961"/>.  Since it may be impossible to even take RTT
+measurements within a contact window, and RTTs may vary significantly across
+contact windows, this type of algorithm is not appropriate for interplanetar
+use.  Additionally, default values may be in ranges such as 1 second, that are
+inappropriate for even Earth-lunar paths.  Based on the known propagation times
+for interplanetary paths and predicted contacts, either pre-configured values
+or new algorithms should be used.
+
+          </t></li> 
+          <li><t>
+
+Handling Failures - Aside from retransmission, there are also other types of
+timers and counters in transport stacks, for things including DNS resolution,
+connection establishment retries, connection keep-alives, user timeouts, and
+delayed acknowledgement.  Additionally, transports receive and respond to ICMP
+messages that indicate other different types of errors from within the network.
+Similar to the case of retransmission timers, other types of timers that
+support failure handling should be adjusted based on estimated propagation and
+forwarding times.  Other heuristics for validating ICMP messages and responding
+may need to be considered.
+
+          </t></li>
+          <li><t>
+
+Congestion Control - Internet congestion control algorithms are based on timely
+receipt of feedback in order to detect losses, delays, or other signals, and
+typically attempt to react rapidly.  Two challenges in the interplanetary case
+include: (1) The relative delays on interplanetary paths are much longer
+(preventing "rapid" response) and may vary in orders of magnitude between
+segments, e.g. across a terrestrial segment, an Earth-Mars segment, and a Mars
+orbit/surface segment.  Congestion may occur in low-latency portions of the
+network, but fail to be detected quickly because loss/acknowledgement
+information propagates and feeds back too slowly, leading to sustained loss due
+to unresponsiveness in a low-latency portion of the network.  (2) By the time
+feedback is received, it is badly out of date, if not completely irrelevant to
+the future.  The advent of IP-based in-network storage for scheduled
+interplanetary links also changes the way that congestion can be measured (e.g.
+in delay-based protocols).  In the near-term, and in present space mission
+operations, it can be assumed that data link capacity is explicitly planned and
+scheduled end-to-end in order to accomodate mission needs.  This makes
+congestion control algorithms largely replaceable with simple nominal rate and
+flow control.  However, for larger and more dynamic future interplanetary
+networks, and shared trunk links, etc., it will be useful in the future to develop more
+optimized congestion control methods, including possibly more effective
+network-based signaling/feedback, rather than simply end-to-end feedback-based
+mechanisms.
+
+          </t></li>
+          <li><t>
+
+Path MTU Discovery - Internet transports typically include probing algorithms
+and rely on end-to-end acknowledgements (or in legacy cases ICMP errors) in
+order to infer the maximum packet sizes that can be used at any time without
+introducing unnecessary IP fragmentation.  Because for interplanetary cases,
+feedback may be slow or unrelated to the current or future paths by the time it
+arrives, it may be more beneficial to simply rely on known / pre-arranged path
+MTU limitations that can be communicated between interplanetary providers and
+other connected providers and users.  Especially for higher bandwidth links, it
+may be beneficial for this to be significantly larger than the minimum Internet
+MTU values that are normally assumed.  For instance, terrestrially many systems
+use 9000+ byte MTUs.  MTUs in interplanetary networks may vary due to the range
+of link bandwidths, and simultaneous desires to be efficient on fast links
+while also wanting to avoid head-of-line blocking for large packets on
+low-bandwidth links.
+
+          </t></li>
+          <li><t>
+
+Multiple Streams - Several transports allow for applications to send/receive
+multiple independent streams of application data, rather than requiring
+separate connections (and handshakes, and state) for each stream.  Due to the
+need to leverage pre-established state and make efficient use of connectivity
+opportunities, these capabilities can be valuable to leverage for
+interplanetary use, however, specific mechanisms may need to be
+evaluated/tuned/modified e.g. to avoid additional round trip times.
+
+          </t></li>
+          <li><t>
+
+Multipath Transport - There may be a variety of different physical paths
+between planets (e.g. using relays or direct links), that could be attractive
+for a mission to use simultaneously as way to increase reliability for mission
+data, or to increase throughput for an application.  However, typical Internet
+multipath transport algorithms are oriented more towards failover than towards
+replicating or load-balancing traffic.  They may only switch flows between
+using alternative paths (e.g. for failover), or allow different streams to use
+different paths, rather than replicating data.  For deep space use, Internet
+multipath transport algorithms could either be tuned or replaced.
+
+          </t></li>
+          <li><t>
+
+Forward Error Correction (FEC) - Generally, FEC is expected to be implemented
+below the link layer.  Within the transport layer, FEC and/or erasure coding
+are not common in typical Internet use today, though FEC and/or erasure coding
+can be integrated with different protocol stacks.  Because it can allow for
+data recovery in the case of packet losses, without suffering extra round
+trips, or requiring bidirectional connectivity, this may be valuable to
+incorporate/enable in future interplanetary transport stacks.
+
+          </t></li>
+        </ul>
+      </section>
+
       <section anchor="udp">
         <name>UDP</name>
         <t>UDP <xref target="RFC768"/> has no notion of time and,
@@ -438,10 +632,13 @@
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4655.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.4838.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6241.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6298.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7020.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7122.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7567.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8040.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8305.xml"/>
+        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8961.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9000.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9110.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9111.xml"/>
@@ -463,6 +660,7 @@
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-tiptop-usecase.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-deepspace-quic-profile.xml"/>
         <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-dnsop-dns-isolated-networks.xml"/>
+        <xi:include href="https://bib.ietf.org/public/rfc/bibxml3/reference.I-D.many-tiptop-dns.xml"/>
         <reference anchor="IPoverCCSDSSpaceLinks" target="https://public.ccsds.org/Pubs/702x1b1c2.pdf">
           <front>
             <title>IP OVER CCSDS SPACE LINKS, Blue Book 702</title>
