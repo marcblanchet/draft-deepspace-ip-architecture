@@ -65,25 +65,25 @@
   </front>
   <middle>
     <section anchor="intro">
-      <name>Introduction</name>
-      <t>
-	Deep space communications involve long delays (e.g., Earth to
-	Mars is 4-20 minutes) and intermittent communications, because
-	of orbital dynamics. Up to now, communications have been done on
-	a layer-2 point-to-point basis, with sometimes the use of
-	relays, but no layer-3 networking has been in use. <xref target="RFC4838"/> reports an assessment done around 25 years
-	ago concluding that the IP protocol stack was not suitable for
-	deep space networking. This result led to the definition of a
-	completely new protocol stack based on a store-and-forward
-	paradigm implemented in the Bundle Protocol(BP) <xref target="RFC9171"/> and its various components, such as
-	convergence-layer adapters (<xref target="RFC9174"/>, <xref target="RFC7122"/>) and BP Security (BPSEC) <xref target="RFC9172"/>.
+        <name>Introduction</name>
+      <t>Deep space communications involve long delays (e.g., Earth to
+      Mars is 4-20 minutes) and intermittent communications, because
+      of orbital dynamics. Up to now, communications have been done on
+      a layer-2 point-to-point basis, with sometimes the use of
+      relays, but no layer-3 networking has been in routine use.
+      <xref target="RFC4838"/> reports an assessment done around 25 years
+      ago concluding that the IP protocol stack was not suitable for
+      deep space networking. However, some things have changed since
+      that time, as there has been evolution in Internet transport and
+      security protocols (e.g. QUIC), routing (e.g. SDN), and forwarding
+      technology (e.g. MPLS and Segment Routing).
       </t>
-      <t>More recently, space agencies plan to deploy IP
+      <t>Currently, space agencies have published plans that include deploying IP
       networks on celestial bodies, such as the Moon <xref target="ioag"/> or Mars<xref target="ioag-mars"/>, on the
-      surface and in orbital vicinity, using layer 2 technologies such
-      as Wi-Fi or 5G. On the surface, the plan is to have a dense
-      network around facilities and habitats.</t>
-      <t>Mission concepts are also based on a cluster of multiple network nodes nearby at Lagrange points.</t>
+      surface and in orbital vicinity, including layer 2 technologies such
+      as Wi-Fi or 5G. On the surface, the plans involve dense
+      networking around facilities and habitats.</t>
+      <t>New mission concepts are also including clusters of multiple networked nodes co-located at Lagrange points.</t>
       <t>
 	A previous document <xref target="I-D.many-deepspace-ip-assessment"/> revisited the
 	initial assessment of not using IP and concluded that the IP
@@ -102,16 +102,6 @@
 	deployment considerations that are discussed in this document.
       </t>
       <t>
-	Delay-Tolerant Networking (DTN), also known as Delay and
-	Disruption-Tolerant Networking, has been used to identify the
-	problem space, and since the solution was based on the Bundle
-	protocol, DTN has also been associated with the Bundle
-	protocol. This document tries to solve the DTN problem using
-	the Internet Protocol stack. Therefore, in this document, the
-	DTN keyword is used to name the problem space, not the Bundle
-	protocol solution.
-      </t>
-      <t>
 	Since the Moon is a few light seconds away from Earth, it is
 	possible to configure and run various IP-based protocols and
 	applications to make it "work". Mars with a much longer delay
@@ -125,15 +115,12 @@
 	does not include the Moon, this document applies to IP
 	networks on the Moon.
       </t>
-      <t>It should also be noted that DTN and BP were also designed
-      for non-space use cases. While this document focuses on the deep
-      space use case, it shall work for the other use cases of BP, but
-      these use cases are outside of the scope of this document.</t>
-      <t>As with the Bundle protocol, this framework proposes to use
-      IP in deep space with a similar store-and-forward
-      paradigm. Therefore, the IP layer has to deal with the fact that
-      a destination may not be currently reachable and that IP packets
-      could be stored for an unusual amount of time, such as minutes,
+      <t>This framework proposes to use
+      IP in deep space, based on queueing outbound packets for upcoming
+      contact opportunities.
+      In this case, the IP layer has to deal with the fact that
+      a next-hop may not be currently reachable and that IP packets
+      could be buffered for an unusual amount of time, such as minutes,
       hours, or days, in the forwarding device waiting for reachability back
       because of a new
       link-up  opportunity. The transport layer should be able to work
@@ -187,15 +174,18 @@
         <name>IP Forwarding and Store-and-Forward</name>
         <t>
 	  For deep space applications, an IP packet may need to be
-	  stored temporarily over much longer periods than are typical
+	  queued for much longer periods than are typical
 	  for the Internet when the next hop is currently unreachable
-	  or undefined, which can happen due to orbital dynamics. This
-	  is commonly referred to as "store-and-forward" and bears no
-	  relationship to the same term when used regarding
-	  switch architectures.
-	</t>
+      or undefined, which can happen due to planning of periodic contacts
+      around orbital dynamics, and other antenna scheduling limitations. Terms
+      have been used including "store-and-forward" (which is already
+      used differently elsewhere in the context of switch architectures), or
+      "store, carry, and forward", to describe the behavior of buffering IP
+      packets rather than immediately discarding them when the next-hop
+      is not immediately available on-link.
+        </t>
         <t>
-	  This store and forward mechanism may be implemented at layer
+	  This queuing may be implemented at layer
 	  2 as is currently done by the Mars orbiters. In this case,
 	  the frames are stored, regardless of payload type.  In this
 	  case, IP packets are unaware of the store-and-forward and no
@@ -206,21 +196,23 @@
         <t>
 	  If an IP forwarder has an interface on an intermittent link, and that link is down,
       some destinations may become unreachable when there is no alternate route. In this case,
-	  the forwarder store the packets locally instead of dropping them. This might be implemented as a deep queue with
+	  the forwarder buffers the IP packets locally instead of dropping them. This might be implemented as a deep queue with
 	  active queue management (AQM) <xref target="RFC7567"/>. When the
 	  route to the destination is back, on the same link or a different link, maybe minutes or hours
 	  later, the stored packets can be transmitted.
 	</t>
         <t>
-	  This store-and-forward mechanism requires proper
-	  provisioning of storage for the
-	  target deployment and usage. If the storage is full, then
+	  This requires proper
+	  provisioning of buffer storage memory for the
+	  target deployment and usage. If the buffer is full, then
       packets must be dropped. The choice of which packets
 	  to drop depends on the policies configured on the node, which may be a
 	  function of traffic class, source or destination IP
 	  addresses, flow labels, or other parameters. An example is
 	  described in <xref target="I-D.blanchet-tvr-forwarding"/>.
 	</t>
+        <t>Packets might also be lost if a buffer is cleared for any other reason (e.g. due to reboot), or corrupted somehow (e.g. due to cosmic rays or other uncorrectable memory upsets).  The architecture described in this document does not require IP forwarding nodes to necessarily implement anything beyond a typical "best effort" service and reliability, though more complex means to support reliable packet delivery are compatible and can interoperate within the architecture if desirable.
+        </t>
       </section>
       <section anchor="headercompression">
         <name>Header Compression</name>
@@ -634,7 +626,6 @@ incorporate/enable in future interplanetary transport stacks.
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6241.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.6298.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7020.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7122.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.7567.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8040.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.8305.xml"/>
@@ -642,9 +633,6 @@ incorporate/enable in future interplanetary transport stacks.
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9000.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9110.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9111.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9171.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9172.xml"/>
-        <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9174.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9204.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9260.xml"/>
         <xi:include href="https://www.rfc-editor.org/refs/bibxml/reference.RFC.9293.xml"/>
