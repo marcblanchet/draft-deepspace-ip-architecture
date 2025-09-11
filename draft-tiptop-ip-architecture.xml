@@ -584,11 +584,12 @@ incorporate/enable in future interplanetary transport stacks.
 	various methods and the naming hierarchy that should be used in space.</t>
       </section>
       <section>
-        <name>Network Management</name>
-        <t>NETCONF <xref target="RFC6241"/> and RESTCONF <xref target="RFC8040"/> shall be used with proper configuration
-	values to avoid timeouts and appropriate transport. NETCONF
-	over QUIC transport <xref target="I-D.ietf-netconf-over-quic"/> or RESTCONF over HTTP over QUIC transport shall be configured with appropriate QUIC transport parameters as discussed in <xref target="quic-section"/>.</t>
-        <t>While being declared historic in IETF, SNMP<xref target="RFC1157"/> runs over UDP and has no notion of time. Therefore, with proper configuration of client timeout, it can be used as is to manage nodes and services in deep space.</t>
+          <name>Network Management</name>
+          <t>NETCONF <xref target="RFC6241"/> and RESTCONF <xref target="RFC8040"/> shall be used with proper configuration
+              values to avoid timeouts and appropriate transport. NETCONF
+              over QUIC transport <xref target="I-D.ietf-netconf-over-quic"/> or RESTCONF over HTTP over QUIC transport shall be configured with appropriate QUIC transport parameters as discussed in <xref target="quic-section"/>.</t>
+          <t>Given the non-typical delays in requests and response in space compared to traditional network management frameworks on Internet and private networks, expectations about when configuration changes will be applied and confirmed or the timeliness of the actual value received from a request need to be taken into account. For example, a configuration change may take hours to be received by the spacecraft, which is not expected in typical network operations. A request for some value may take hours to be received by the spacecraft and take hours to be received by the requestor, which means the value may not be current or expired. Moreover, typical timeouts of NETCONF clients should be adjusted to the expected RTT.</t>
+          <t>While being declared historic in IETF, SNMP<xref target="RFC1157"/> runs over UDP and has no notion of time. Therefore, with proper configuration of client timeout, it can be used as is to manage nodes and services in deep space.</t>
       </section>
     </section>
     <section anchor="IANA">
