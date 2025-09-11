@@ -552,6 +552,11 @@ incorporate/enable in future interplanetary transport stacks.
       that was not locally cached. An example would be a rover on Mars presenting an HTTP server with a base and bare HTML page to offer basic info on its status (maybe all in text) and some additional detailed pages, most likely also in base HTML text. However, it is foreseen that most applications based on QUIC-HTTP transport in deep space would be using REST or similar asynchronous patterns and not typical web browsing.</t>
       <t>Caching should be used extensively on space networks to maximize local fetching. Preemptive caching by pre-populating caches with data that shall be used locally on the celestial body network shall be done as much as possible to provide better response time on the local celestial body network.</t>
       <t>QPACK <xref target="RFC9204"/> should be considered for higher bandwidth efficiency.</t>
+      
+      <section>
+          <name>CoAP</name>
+          <t>The Constrained Application Protocol (CoAP)<xref target="RFC7252"/> is a specialized web transfer protocol for use with constrained nodes and constrained networks, therefore a candidate for an application protocol for space, similar to HTTP. If considered, proper use of its underlying transport and timers should be looked at.</t>
+      </section>
     </section>
     <section>
       <name>Network services</name>
